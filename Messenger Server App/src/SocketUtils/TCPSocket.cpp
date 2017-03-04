@@ -32,7 +32,7 @@ TCPSocket::TCPSocket(int port){
 	 * SOCK_STREAM - TCP
 	 * 0 - default protocol type
 	 */
-	socket_fd = socket (AF_INET, SOCK_STREAM, 0);
+	socket_fd = ::socket(AF_INET, SOCK_STREAM, 0);
 
 	// clear the s_in struct
 	bzero((char *) &serverAddr, sizeof(serverAddr));  /* They say you must do this    */
@@ -52,7 +52,7 @@ TCPSocket::TCPSocket(int port){
 
 
 TCPSocket::TCPSocket(const string& peerIp, int port){
-	cout<<"openning new client socket"<<endl;
+	//cout<<"openning new client socket"<<endl;
 
 	/**
 	 * int socket(int domain, int type, int protocol);
@@ -61,7 +61,7 @@ TCPSocket::TCPSocket(const string& peerIp, int port){
 	 * SOCK_STREAM - TCP
 	 * 0 - default protocol type
 	 */
-	socket_fd = socket (AF_INET, SOCK_STREAM, 0);
+	socket_fd = ::socket (AF_INET, SOCK_STREAM, 0);
 
 	// clear the s_in struct
 	bzero((char *) &peerAddr, sizeof(peerAddr));  /* They say you must do this    */
@@ -103,7 +103,7 @@ int TCPSocket::send(const string& msg){
 
 
 void TCPSocket::close(){
-	cout<<"closing socket"<<endl;
+	//cout<<"closing socket"<<endl;
 	shutdown(socket_fd,SHUT_RDWR);
 	::close(socket_fd);
 }
@@ -112,3 +112,18 @@ void TCPSocket::close(){
 string TCPSocket::fromAddr(){
 	return inet_ntoa(peerAddr.sin_addr);
 }
+
+sockaddr_in TCPSocket::getServerAddr(){
+	return serverAddr;
+}
+
+sockaddr_in TCPSocket::getPeerAddr(){
+	return peerAddr;
+}
+
+
+int TCPSocket::socket(){
+	return socket_fd;
+}
+
+

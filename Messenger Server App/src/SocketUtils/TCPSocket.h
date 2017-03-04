@@ -23,13 +23,13 @@ class TCPSocket{
 	struct sockaddr_in peerAddr;
 	int socket_fd;
 
-private:
-	/**
-	 * private constructor to create a secondary server socket to communicate with a remote peer
-	 */
-	TCPSocket(int connected_sock,struct sockaddr_in serverAddr,struct sockaddr_in peerAddr);
+
 
 public:
+
+	// constructor that accepts an already existing socket file descriptor
+	TCPSocket(int connected_sock,struct sockaddr_in serverAddr,struct sockaddr_in peerAddr);
+
 	/**
 	 * Constructor create a TCP server socket
 	 */
@@ -64,6 +64,17 @@ public:
 	 * return the address of the connected peer
 	 */
 	string fromAddr();
+
+
+	sockaddr_in getServerAddr();
+
+	sockaddr_in getPeerAddr();
+
+	/**
+	 * return the socket_fd
+	 */
+	int socket();
+
 };
 }
 
