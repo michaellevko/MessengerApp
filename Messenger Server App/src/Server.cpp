@@ -47,7 +47,7 @@ void Server::run() {
 		if(conn == NULL){
 			break;
 		}
-		this->getAuthenticator()()->addConn(conn);
+		this->getAuthenticator()->addConn(conn);
 	}
 }
 

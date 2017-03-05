@@ -83,3 +83,7 @@ void Dispatcher::run(){
 }
 
 }
+
+vector<string> Dispatcher::getAllConnectedPeers(){
+	return NULL;
+}

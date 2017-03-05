@@ -10,19 +10,29 @@
 
 #include "./Dispatcher.h"
 #include "./SocketUtils/MThread.h"
+#include <iostream>
+#include <fstream>
+#include "Peer.h"
 
 using namespace npl;
+
+using namespace std;
 
 class Authenticator : public MThread {
 private:
 	Dispatcher* dispatcher;
 	vector<TCPSocket*> conns;
+	bool isUserRegistered(string userName);
+	bool isUserLegit(string userName, string password);
+	vector<string> getAllRegisteredUsers();
+	vector<TCPSocket*>::iterator Authenticator::findConnInVector(TCPSocket* peer);
 public:
 	Dispatcher * getDispatcher();
 	void addConn(TCPSocket* conn);
 	void run();
-	bool Login();
-	bool Register();
+	bool Login(string userName, string password);
+	bool Register(string userName, string password);
+	void removeConn(TCPSocket* conn);
 	Authenticator();
 	virtual ~Authenticator();
 };

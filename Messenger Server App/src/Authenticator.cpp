@@ -6,6 +6,10 @@
  */
 
 #include "Authenticator.h"
+#include "Parser.cpp"
+#include <algorithm>
+
+#define USERS_FILE "UsersFile"
 
 using namespace npl;
 
@@ -31,56 +35,153 @@ void Authenticator::run() {
 			string* data;
 			data = TCPMessengerProtocol::readMsg(conn);
 
-			switch (command) {
+			switch (data[0]) {
 
-			case LIST_USERS:
-
-				MessengerProtocol::SendMSG(peer, LIST_USERS,
-						getUserPassMap());
+			case GET_ALL_USERS:
+				TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllRegisteredUsers());
 				break;
 
-			case REGISTER:
-				if (this->Register(data)) {
-					PeerName * thisPeer = new PeerName(
-							data.find(USER_NAME_KEY)->second, peer);
-					dispatcher->add(thisPeer);
-					this->remove(peer);
-				} else {
-					MessengerProtocol::SendMSG(peer, ERROR_REGISTER);
+			case CREATE_USER:
+				if (this->Register(data[1], data[2])) {
+					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+				} else { TCPMessengerProtocol::sendMsg(conn, FAILURE); }
+				break;
 
+			case LOGIN_USER:
+				if (this->Login(data[0], data[1])) {
+					Peer * newPeer = new Peer(conn, data[1]);
+					this->getDispatcher()->addPeer(newPeer);
+					this->removeConn(conn);
+					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+				} else {
+					TCPMessengerProtocol::sendMsg(conn, FAILURE);
 				}
 				break;
 
-			case LOGIN:
-				if (this->Login(data)) {
-					PeerName * thisPeer = new PeerName(
-							data.find(USER_NAME_KEY)->second, peer);
-					dispatcher->add(thisPeer);
-					this->remove(peer);
-					cout << "login successful" << endl;
-				} else {
-					MessengerProtocol::SendMSG(peer, ERROR_LOGIN);
-				}
+			case GET_ALL_CONNECTED_USERS:
+				TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getDispatcher()->getAllConnectedPeers());
 				break;
-
-			case LIST_CONNECTED_USERS:
-
-				MessengerProtocol::SendMSG(peer, LIST_CONNECTED_USERS,
-						this->dispatcher->getMapOfAllConnectPeers());
-
-				break;
-			case DISCONNECT:
-				this->remove(peer);
-				break;
-			case NONE:
-				this->remove(peer);
+			case EXIT:
+				this->removeConn(conn);
 				break;
 			default:
-				MessengerProtocol::SendMSG(peer, COMMAND_NOT_FOUND);
+				TCPMessengerProtocol::sendMsg(conn, FAILURE);
 				break;
 			}
 		}
 	}
+}
+
+// Attempts to login user
+// returns false if user isnt registered, true if logged in successfully
+bool Authenticator::Login(string userName, string password){
+	bool isUserOk = false;
+	if(this->isUserLegit(userName, password)){
+		isUserLegit = true;
+	}
+	else {
+		cout << "ERROR: " + userName + " isnt a registered user." << endl;
+	}
+
+	return isUserOk;
+}
+
+// Attempts to remove a connection from server
+void Authenticator::removeConn(TCPSocket* conn){
+	vector<TCPSocket*>::iterator it = this->findConnInVector(conn);
+		if (it != this->conns.end())
+			this->conns.erase(it);
+		else
+			cout << "ERROR: Can't remove connection (not found)." << endl;
+}
+
+// Find connection location in connection vector
+vector<TCPSocket*>::iterator Authenticator::findConnInVector(TCPSocket* conn) {
+	if (this->conns.size() > 0) {
+		vector<TCPSocket*>::iterator it;
+		for (it = this->conns.begin(); it != this->conns.end(); it++) {
+			if (*it == conn) {
+				return it;
+			}
+		}
+	}
+	return this->conns.end();
+}
+
+
+// Attempts to register user in UsersFile
+// returns false if user already exists, true if registered successfully
+bool Authenticator::Register(string userName, string password){
+	cout << userName << ":" << password << endl;
+	bool ret = false;
+
+	if(!isUserRegistered(userName)){
+		ofstream file(USERS_FILE, ios::out | ios::trunc);
+		if (file.is_open()) {
+			file << userName + ";" + password << endl;
+			file.close();
+			ret = true;
+		} else
+			cout << "ERROR: Unable to open UserPass file" << endl;
+	}
+
+	return ret;
+}
+
+// Checks if user already registered
+// returns false if new user, true if user already exists
+bool Authenticator::isUserRegistered(string userName){
+	bool doesExist = false;
+	ifstream file(USERS_FILE, ios::in);
+	if (file.is_open()) {
+		string line, username, password;
+		while(getline(file,line)){
+			vector<std::string> userPass = split(line, DELIMITER);
+			if(userName == userPass[0]){
+				doesExist = true;
+				break;
+			}
+		}
+
+		file.close();
+	}
+	return doesExist;
+}
+
+// Checks if user is registered and also if password is correct
+// returns false if username not found or password incorrect, true if user is legit
+bool Authenticator::isUserLegit(string userName, string password){
+	bool isCorrect = false;
+	ifstream file(USERS_FILE, ios::in);
+	if (file.is_open()) {
+		string line, username, password;
+		while(getline(file,line)){
+			vector<std::string> userPass = split(line, DELIMITER);
+			if(userName == userPass[0]){
+				if(password == userPass[1]){
+					isCorrect = true;
+					break;
+				}
+			}
+		}
+		file.close();
+	}
+	return isCorrect;
+}
+
+// Returns all users in UsersFile
+vector<string> Authenticator::getAllRegisteredUsers(){
+	vector<string> users;
+	ifstream file(USERS_FILE, ios::in);
+		if (file.is_open()) {
+			string line, username;
+			while(getline(file,line)){
+				vector<std::string> userPass = split(line, DELIMITER);
+				users.push_back(userPass[0]);
+			}
+			file.close();
+		}
+	return users;
 }
 
 

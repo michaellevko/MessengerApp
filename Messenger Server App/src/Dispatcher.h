@@ -18,15 +18,15 @@ using namespace std;
 namespace npl{
 class Dispatcher : public MThread, public MTCPListener{
 private:
-	void addToUserList(Peer peer);
-	void removeFromUserList(Peer peer);
-	vector<Peer> authenticationList;
+	vector<Peer*> peerList;
+//	vector<Session*> sessions;
+//	vector<ChatRoomSession*> chatRooms;
 
 public:
 	Dispatcher();
 	void run();
-	void addToAuthenticationList(TCPSocket* conn);
-	void removeFromAuthenticationList(TCPSocket* conn);
+	vector<string> getAllConnectedPeers();
+	void addPeer(Peer* peer);
 	void printAllUsers();
 	void printAllConnectedUsers();
 	void printAllSessions();
