@@ -22,23 +22,23 @@ Server::~Server() {
 
 
 void Server::listAllUsers() {
-	//this->getDispatcher()->printAllUsers();
+	this->getAuthenticator()->printAllRegisteredUsers();
 }
 
 void Server::ListAllConnectedUsers() {
-	//this->getDispatcher()->printAllConnectedUsers();
+	this->getAuthenticator()->getDispatcher()->printAllConnectedUsers();
 }
 
 void Server::ListAllSessions() {
-	//this->getDispatcher()->printAllSessions();
+	this->getAuthenticator()->getDispatcher()->printAllSessions();
 }
 
 void Server::ListAllRooms() {
-	//this->getDispatcher()->printAllRooms();
+	this->getAuthenticator()->getDispatcher()->printAllRooms();
 }
 
 void Server::ListAllUsersInThisRoom(string roomName) {
-	//this->getDispatcher()->printAllUsersInThisRoom(roomName);
+	this->getAuthenticator()->getDispatcher()->printAllUsersInThisRoom(roomName);
 }
 
 void Server::run() {
@@ -55,6 +55,7 @@ void Server::shutdown() {
 	socket->close();
 	waitForThread();
 	delete this->socket;
+	this->getAuthenticator()->shutdown();
 	delete this->auth;
 }
 

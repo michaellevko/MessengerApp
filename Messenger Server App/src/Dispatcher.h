@@ -13,21 +13,30 @@
 #include "./SocketUtils/MThread.h"
 #include "Peer.h"
 #include "./SocketUtils/MTCPListener.h"
+#include "Session.h"
+#include "Chatroom.h"
+
 
 using namespace std;
 namespace npl{
-class Dispatcher : public MThread, public MTCPListener{
+class Dispatcher : public MThread{
 private:
-	vector<Peer*> peerList;
-//	vector<Session*> sessions;
-//	vector<ChatRoomSession*> chatRooms;
+	vector<Peer*> peers;
+	vector<Session*> sessions;
+	vector<Chatroom*> chatRooms;
+	Peer* FindPeer(string userName);
+	Peer* FindPeer(TCPSocket* sock);
+	bool isPeerAvailable(Peer* peer);
+	Chatroom* findChatRoom(string usrname);
 
 public:
 	Dispatcher();
+	vector<TCPSocket*> getPeersSockets();
 	void run();
 	vector<string> getAllConnectedPeers();
+	void OpenSession(Peer* peerA, Peer* peerB);
 	void addPeer(Peer* peer);
-	void printAllUsers();
+	void removePeer(Peer* peer);
 	void printAllConnectedUsers();
 	void printAllSessions();
 	void printAllRooms();

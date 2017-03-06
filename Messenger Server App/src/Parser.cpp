@@ -3,6 +3,10 @@
 #include <sstream>
 #include <iostream>
 
+
+#ifndef PARSER
+#define PARSER
+
 using namespace std;
 
 
@@ -21,3 +25,5 @@ std::vector<std::string> split(const std::string &s, char delim) {
 	split(s, delim, std::back_inserter(elems));
 	return elems;
 }
+
+#endif /* PARSER */

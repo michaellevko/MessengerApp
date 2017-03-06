@@ -25,10 +25,12 @@ private:
 	bool isUserRegistered(string userName);
 	bool isUserLegit(string userName, string password);
 	vector<string> getAllRegisteredUsers();
-	vector<TCPSocket*>::iterator Authenticator::findConnInVector(TCPSocket* peer);
+	vector<TCPSocket*>::iterator findConnInVector(TCPSocket* peer);
 public:
+	void printAllRegisteredUsers();
 	Dispatcher * getDispatcher();
 	void addConn(TCPSocket* conn);
+	void shutdown();
 	void run();
 	bool Login(string userName, string password);
 	bool Register(string userName, string password);

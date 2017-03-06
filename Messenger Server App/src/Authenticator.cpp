@@ -11,6 +11,7 @@
 
 #define USERS_FILE "UsersFile"
 
+using namespace std;
 using namespace npl;
 
 Authenticator::Authenticator() {
@@ -32,10 +33,11 @@ void Authenticator::run() {
 		TCPSocket* conn = listener.listen();
 
 		if (conn != NULL) {
-			string* data;
+			vector<string> data;
 			data = TCPMessengerProtocol::readMsg(conn);
 
-			switch (data[0]) {
+
+			switch (atoi(data[0].c_str())) {
 
 			case GET_ALL_USERS:
 				TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllRegisteredUsers());
@@ -77,7 +79,7 @@ void Authenticator::run() {
 bool Authenticator::Login(string userName, string password){
 	bool isUserOk = false;
 	if(this->isUserLegit(userName, password)){
-		isUserLegit = true;
+		isUserOk = true;
 	}
 	else {
 		cout << "ERROR: " + userName + " isnt a registered user." << endl;
@@ -184,6 +186,22 @@ vector<string> Authenticator::getAllRegisteredUsers(){
 	return users;
 }
 
+// Prints all registered users to server console
+void Authenticator::printAllRegisteredUsers(){
+	vector<string> users = this->getAllRegisteredUsers();
+	for (int i=0; i<users.size(); i++){
+		cout << users[i] << endl;
+	}
+}
+
+void Authenticator::shutdown() {
+	for (vector<TCPSocket*>::iterator it = this->conns.begin(); it != this->conns.end(); ++it) {
+		TCPSocket* p = *it;
+		p->close();
+		delete p;
+	}
+	delete this->dispatcher;
+}
 
 Dispatcher* Authenticator::getDispatcher(){
 	return this->dispatcher;

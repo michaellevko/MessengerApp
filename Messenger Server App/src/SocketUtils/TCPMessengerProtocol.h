@@ -5,8 +5,8 @@
  *      Author: efi
  */
 
-#include "./SocketUtils/TCPSocket.h"
-#include "Parser.cpp"
+#include "TCPSocket.h"
+#include "../Parser.cpp"
 
 #ifndef TCPMESSENGERPROTOCOL_H_
 #define TCPMESSENGERPROTOCOL_H_
@@ -17,7 +17,7 @@
  * and optionally data follows in the format [Data length 4 byte int][ Data ]
  */
 #define MSNGR_PORT 3346
-#define DELIMITER ((const char)";")
+#define DELIMITER ((const char)';')
 
 #define CLOSE_SESSION_WITH_PEER 	1
 #define OPEN_SESSION_WITH_PEER 		2	//command:ip:port
@@ -59,7 +59,9 @@ public:
 	}
 
 	void static sendMsg(TCPSocket* sock, int command, vector<string> data){
-		char* msg = command + DELIMITER;
+		int tmp = htonl(command);
+		char* buff = (char*)&tmp;
+		string msg = buff + DELIMITER;
 		for (int i=0; i<data.size(); i++){
 			msg += data[i] + DELIMITER;
 		}
@@ -67,7 +69,9 @@ public:
 	}
 
 	void static sendMsg(TCPSocket* sock, int command){
-		char* msg = command + DELIMITER;
+		int tmp = htonl(command);
+		char* buff = (char*)&tmp;
+		string msg = buff + DELIMITER;
 		sock->send(msg);
 	}
 };
