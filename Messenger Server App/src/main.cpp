@@ -16,8 +16,6 @@
 #define	HELP "help"
 
 using namespace std;
-using namespace npl;
-
 static void printInstructions(){
 		cout<<"---------------MESSENGER SERVER---------------"<<endl;
 		cout<<"lu ­             - List All Users"<<endl;

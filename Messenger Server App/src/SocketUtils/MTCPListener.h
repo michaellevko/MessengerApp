@@ -12,7 +12,6 @@
 #include <vector>
 
 using namespace std;
-namespace npl {
 
 class MTCPListener {
 
@@ -30,7 +29,5 @@ public:
 	TCPSocket* listen();
 
 };
-
-} /* namespace npl */
 
 #endif /* MTCPLISTENER_H_ */

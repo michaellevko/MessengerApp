@@ -6,7 +6,6 @@
  */
 
 #include "Peer.h"
-namespace npl{
 
 Peer::Peer(TCPSocket* sock, string name){
 	this->peerSock = sock;
@@ -22,7 +21,5 @@ TCPSocket* Peer::getPeerSock(){
 }
 
 Peer::~Peer(){
-
-}
 
 }

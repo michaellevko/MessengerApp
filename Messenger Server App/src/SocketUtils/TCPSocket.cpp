@@ -15,7 +15,6 @@
 #include <string.h>
 
 using namespace std;
-using namespace npl;
 
 TCPSocket::TCPSocket(int connected_sock,struct sockaddr_in serverAddr,struct sockaddr_in peerAddr){
 	this->serverAddr =  serverAddr;

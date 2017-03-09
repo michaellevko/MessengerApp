@@ -11,7 +11,6 @@
 #include "Authenticator.h"
 
 using namespace std;
-namespace npl{
 
 class Server : public MThread {
 
@@ -31,7 +30,5 @@ public:
 	Authenticator* getAuthenticator();
 	virtual ~Server();
 };
-
-}
 
 #endif /* SRC_SERVER_H_ */

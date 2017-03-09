@@ -16,8 +16,6 @@
 
 using namespace std;
 
-namespace npl{
-
 class TCPSocket{
 	struct sockaddr_in serverAddr;
 	struct sockaddr_in peerAddr;
@@ -76,6 +74,5 @@ public:
 	int socket();
 
 };
-}
 
 #endif

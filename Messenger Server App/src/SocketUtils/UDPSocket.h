@@ -15,7 +15,6 @@
 #include <iostream>
 
 using namespace std;
-namespace npl{
 
 class UDPSocket{
 	struct sockaddr_in from;
@@ -30,5 +29,4 @@ public:
 	string fromAddr();
 };
 
-}
 #endif /* UDPSOCKET_H_ */

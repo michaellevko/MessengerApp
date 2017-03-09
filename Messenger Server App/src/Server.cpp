@@ -7,8 +7,6 @@
 
 #include "Server.h"
 
-namespace npl{
-
 Server::Server() {
 	socket = new TCPSocket(MSNGR_PORT);
 	auth = new Authenticator();
@@ -61,6 +59,4 @@ void Server::shutdown() {
 
 Authenticator* Server::getAuthenticator(){
 	return this->auth;
-}
-
 }

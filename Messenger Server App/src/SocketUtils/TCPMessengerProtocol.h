@@ -21,39 +21,27 @@
  */
 #define MSNGR_PORT 3346
 #define DELIMITER ((const char)';')
-
-#define CLOSE_SESSION_WITH_PEER 	1
-#define OPEN_SESSION_WITH_PEER 		2	//command:ip:port
-#define EXIT						3
-#define SEND_MSG_TO_PEER			4	//[length - int][msg - string]
-#define SESSION_REFUSED				5
-#define SESSION_ESTABLISHED			6
-#define CREATE_USER					7	//username:password
-#define LOGIN_USER					8	//username:password
-#define GET_ALL_USERS				9
-#define GET_ALL_CONNECTED_USERS		10
-#define GET_ALL_SESSIONS			11
-#define GET_ALL_ROOMS				12
-#define GET_ALL_USERS_IN_ROOM		13	//roomName
-#define CONNECT_TO_PEER_INIT		14	//userName
-#define CONNECT_TO_PEER_RUN			15	//ip
-#define CONNECTION_PERMITTED		16	//ip OR ip list seperated by delimiter
-#define CONNECTION_REFUSED			17
-#define CREATE_CHAT_ROOM			18
-#define ENTER_CHAT_ROOM				19	//roomName
-#define EXIT_CHAT_ROOM				20
-#define DESTROY_CHAT_ROOM			21  //roomName
-#define ENTER_CHAT_ROOM_PEER		22
-#define SUCCESS						23
-#define FAILURE						24
-
-#define TEST_PEER_NAME "test"
-#define SESSION_REFUSED_MSG "Connection to peer refused, peer might be busy or disconnected, try again later"
+#define SEND_MSG_TO_PEER			1	//[length - int][msg - string]
+#define CONNECT_TO_PEER_RUN			2	//ip
+#define CONNECT_TO_PEER_INIT		3	//userName
+#define CLOSE_SESSION_WITH_PEER 	4
+#define GET_ALL_CONNECTED_USERS		5
+#define GET_ALL_ROOMS				6
+#define LOGIN_USER					7	//username:password
+#define SUCCESS						8
+#define FAILURE						9
+#define CREATE_USER					10	//username:password
+#define EXIT						11
+#define ENTER_CHAT_ROOM				12	//roomName
+#define CREATE_CHAT_ROOM			13
+#define GET_ALL_USERS				14
+#define EXIT_CHAT_ROOM				15
+#define DESTROY_CHAT_ROOM			16  //roomName
+#define GET_ALL_USERS_IN_ROOM		17	//roomName
 
 const int MAX_MSG_LEN = 256;
 
 using namespace std;
-using namespace npl;
 
 class TCPMessengerProtocol{
 public:

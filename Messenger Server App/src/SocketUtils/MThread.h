@@ -10,9 +10,6 @@
 
 #include <pthread.h>
 
-namespace npl{
-
-
 class MThread{
 public:
 	pthread_t threadId;
@@ -24,5 +21,4 @@ public:
 	virtual ~MThread();
 };
 
-}
 #endif /* MTHREAD_H_ */

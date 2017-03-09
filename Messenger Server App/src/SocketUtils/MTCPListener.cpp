@@ -10,7 +10,6 @@
 
 using namespace std;
 
-namespace npl {
 void MTCPListener::add(TCPSocket* socket){
 	sockets.push_back(socket);
 
@@ -68,6 +67,3 @@ TCPSocket* MTCPListener::listen(){
 	FD_ZERO(&set);
 	return NULL;
 }
-
-
-} /* namespace npl */

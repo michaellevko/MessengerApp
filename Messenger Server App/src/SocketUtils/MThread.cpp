@@ -9,7 +9,6 @@
 #include <iostream>
 #include <stdio.h>
 using namespace std;
-using namespace npl;
 
 void* worker(void* arg){
 	MThread* threadObj = (MThread*)arg;

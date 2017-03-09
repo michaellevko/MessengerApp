@@ -13,8 +13,6 @@
 #include <unistd.h>
 #include <string.h>
 
-using namespace npl;
-
 UDPSocket::UDPSocket(int port){
 	socket_fd = socket (AF_INET, SOCK_DGRAM, 0);
 	if(port != 9999){

@@ -12,7 +12,6 @@
 #include "./SocketUtils/TCPSocket.h"
 
 using namespace std;
-namespace npl{
 
 class Peer{
 private:
@@ -24,7 +23,5 @@ public:
 	TCPSocket* getPeerSock();
 	~Peer();
 };
-}
-
 
 #endif /* SRC_PEER_H_ */
