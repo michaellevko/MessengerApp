@@ -40,9 +40,10 @@ void Authenticator::run() {
 			switch (atoi(data[0].c_str())) {
 
 			case GET_ALL_USERS:
+			{
 				TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllRegisteredUsers());
 				break;
-
+			}
 			case CREATE_USER:
 				if (this->Register(data[1], data[2])) {
 					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
