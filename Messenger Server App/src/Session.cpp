@@ -7,8 +7,6 @@
 
 #include "Session.h"
 
-using namespace npl;
-
 Session::Session(Handler* handler, Peer* connA, Peer* connB){
 	this->peerA = connA;
 	this->peerB = connB;
@@ -19,22 +17,38 @@ Session::Session(Handler* handler, Peer* connA, Peer* connB){
 
 void Session::run(){
 	while (isActive) {
-			MTCPListener listener;
-			listener.add(this->peerA->getPeerSock());
-			listener.add(peerB->getPeerSock());
-			TCPSocket * peer = listener.listen();
-			if (peer != NULL) {
-				vector<string> data;
-				data = TCPMessengerProtocol::readMsg(peer);
+		MTCPListener listener;
+		listener.add(this->peerA->getPeerSock());
+		listener.add(this->peerB->getPeerSock());
+		TCPSocket * peer = listener.listen();
+		if (peer != NULL) {
+			vector<string> data;
+			data = TCPMessengerProtocol::readMsg(peer);
+			Peer* sender = FindPeer(peer);
+			switch (atoi(data[0].c_str())) {
 
-				Peer* sender = FindPeer(peer);
-				switch (atoi(data[0].c_str())) {
-
-				default:
-				}
+			case GET_ALL_CONNECTED_USERS:
+			{
+				this->handler->onConnectedUsersList(peer);
+				break;
 			}
+			case GET_ALL_USERS:
+			{
+				this->handler->onUsersList(peer);
+				break;
+			}
+			case CLOSE_SESSION_WITH_PEER:
+			{
+				close();
+				break;
+			}
+			default:
+			{
+				TCPMessengerProtocol::sendMsg(peer, FAILURE);
+			}}
 		}
 		delete this;
+	}
 }
 
 Peer* Session::FindPeer(TCPSocket* peer) {

@@ -10,20 +10,18 @@
 
 #include "Peer.h"
 #include "./SocketUtils/MThread.h"
-#include "./SocketUtils/TCPSocket.h"
 #include "./SocketUtils/MTCPListener.h"
-#include <vector>
 #include "./SocketUtils/TCPMessengerProtocol.h"
 
 using namespace std;
-using namespace npl;
 
 class Session : public MThread{
 public:
 	class Handler{
 	public:
 		virtual void onSessionClose(Session* brocker,Peer* connA,Peer* connB)=0;
-		virtual void onConnectedUserList(TCPSocket* peer, vector<string> data)=0;
+		virtual void onConnectedUsersList(TCPSocket* peer)=0;
+		virtual void onUsersList(TCPSocket* peer)=0;
 	};
 private:
 	Peer* peerA;
@@ -36,10 +34,9 @@ public:
 	void run();
 	void close();
 	Peer* FindPeer(TCPSocket* peer);
+	Session();
 	Session(Handler* handler, Peer* connA, Peer* connB);
 	~Session();
 };
-
-
 
 #endif /* SRC_SESSION_H_ */

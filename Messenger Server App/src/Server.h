@@ -8,10 +8,7 @@
 #ifndef SRC_SERVER_H_
 #define SRC_SERVER_H_
 
-#include "./Authenticator.h"
-#include "./SocketUtils/TCPSocket.h"
-#include "./SocketUtils/MThread.h"
-#include "./SocketUtils/TCPMessengerProtocol.h"
+#include "Authenticator.h"
 
 using namespace std;
 namespace npl{

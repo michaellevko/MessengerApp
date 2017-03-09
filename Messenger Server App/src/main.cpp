@@ -5,8 +5,6 @@
  *      Author: user
  */
 
-#include <iostream>
-#include <string.h>
 #include "Server.h"
 
 #define LIST_USERS "lu"

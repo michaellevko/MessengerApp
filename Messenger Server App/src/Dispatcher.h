@@ -8,40 +8,50 @@
 #ifndef SRC_DISPATCHER_H_
 #define SRC_DISPATCHER_H_
 
-#include <string>
-#include "./SocketUtils/TCPMessengerProtocol.h"
-#include "./SocketUtils/MThread.h"
-#include "Peer.h"
-#include "./SocketUtils/MTCPListener.h"
 #include "Session.h"
 #include "Chatroom.h"
 
-
 using namespace std;
-namespace npl{
-class Dispatcher : public MThread{
+
+class Dispatcher : public MThread, public Session::Handler, public Chatroom::Handler{
+public:
+	class Handler{
+	public:
+		virtual void onUsersList(TCPSocket* peer)=0;
+	};
 private:
 	vector<Peer*> peers;
 	vector<Session*> sessions;
 	vector<Chatroom*> chatRooms;
+	Handler* handler;
 	Peer* FindPeer(string userName);
 	Peer* FindPeer(TCPSocket* sock);
 	bool isPeerAvailable(Peer* peer);
 	Chatroom* findChatRoom(string usrname);
+	pthread_mutex_t peerlistlock;
+	pthread_mutex_t chatRoomslock;
 
 public:
-	Dispatcher();
-	vector<TCPSocket*> getPeersSockets();
+	Dispatcher(Handler* handler);
+	virtual ~Dispatcher();
 	void run();
+	vector<TCPSocket*> getPeersSockets();
 	vector<string> getAllConnectedPeers();
-	void OpenSession(Peer* peerA, Peer* peerB);
+	vector<string> getAllRoomNames();
 	void addPeer(Peer* peer);
 	void removePeer(Peer* peer);
 	void printAllConnectedUsers();
 	void printAllSessions();
 	void printAllRooms();
 	void printAllUsersInThisRoom(string roomName);
-	virtual ~Dispatcher();
+	void openSession(Peer* peerA, Peer* peerB);
+	void openChatRoom(Peer* roomOwner, string roomName);
+
+	void onSessionClose(Session* brocker,Peer* connA,Peer* connB);
+	void onConnectedUsersList(TCPSocket* peer);
+	void onUsersList(TCPSocket* peer);
+	void onChatRoomExit(Peer* chatRoomPeer);
+	void onChatRoomClose(Chatroom* brocker);
 };
-}
+
 #endif /* SRC_DISPATCHER_H_ */

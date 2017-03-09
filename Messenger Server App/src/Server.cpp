@@ -43,7 +43,7 @@ void Server::ListAllUsersInThisRoom(string roomName) {
 
 void Server::run() {
 	while(true){
-		TCPSocket * conn = socket->listenAndAccept();
+		TCPSocket* conn = this->socket->listenAndAccept();
 		if(conn == NULL){
 			break;
 		}

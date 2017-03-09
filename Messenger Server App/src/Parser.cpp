@@ -1,28 +1,23 @@
-#include <vector>
-#include <string>
-#include <sstream>
-#include <iostream>
-
+#include "Parser.h"
 
 #ifndef PARSER
 #define PARSER
 
 using namespace std;
 
-
 template<typename Out>
-void split(const std::string &s, char delim, Out result) {
-	std::stringstream ss;
+void split(const string &s, char delim, Out result) {
+	stringstream ss;
 	ss.str(s);
-	std::string item;
-	while (std::getline(ss, item, delim)) {
+	string item;
+	while (getline(ss, item, delim)) {
 		*(result++) = item;
 	}
 }
 
-std::vector<std::string> split(const std::string &s, char delim) {
-	std::vector<std::string> elems;
-	split(s, delim, std::back_inserter(elems));
+vector<string> split(const string &s, char delim) {
+	vector<string> elems;
+	split(s, delim, back_inserter(elems));
 	return elems;
 }
 

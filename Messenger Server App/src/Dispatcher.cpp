@@ -7,10 +7,10 @@
 
 #include "Dispatcher.h"
 
-namespace npl{
+using namespace std;
 
-Dispatcher::Dispatcher() {
-	start();
+Dispatcher::Dispatcher(Handler* handler) {
+	this->handler = handler;
 }
 
 Dispatcher::~Dispatcher() {
@@ -41,7 +41,7 @@ void Dispatcher::printAllSessions() {
 void Dispatcher::printAllRooms() {
 	cout<<"Active rooms :"<<endl;
 	vector<Chatroom* >::iterator it;
-	for (it = chatRooms.begin(); it != chatRooms.end(); it++) {
+	for (it = this->chatRooms.begin(); it != this->chatRooms.end(); it++) {
 		Chatroom* chatroom=*it;
 		cout<<chatroom->getRoomName()<<endl;
 	}
@@ -54,12 +54,12 @@ void Dispatcher::printAllUsersInThisRoom(string roomName) {
 }
 
 // Returns a chatroom instance from chatrooms vector by name
-Chatroom* Dispatcher::findChatRoom(string userName) {
+Chatroom* Dispatcher::findChatRoom(string roomName) {
 	vector<Chatroom*>::iterator it;
 	Chatroom* ret = NULL;
-	for (it = chatRooms.begin(); it != chatRooms.end(); it++) {
+	for (it = this->chatRooms.begin(); it != this->chatRooms.end(); it++) {
 		Chatroom* room = *it;
-		if (room->getRoomName() == userName) {
+		if (room->getRoomName() == roomName) {
 			ret = room;
 		}
 	}
@@ -94,6 +94,15 @@ Peer* Dispatcher::FindPeer(string userName) {
 	return ret;
 }
 
+// Adds a new peer from Authenticator to Dispatcher after the login process
+void Dispatcher::addPeer(Peer* peer){
+	pthread_mutex_lock(&peerlistlock);
+	this->peers.push_back(peer);
+	pthread_mutex_unlock(&peerlistlock);
+	if (peers.size() == 1)
+		start();
+}
+
 void Dispatcher::run(){
 	while (this->peers.size() > 0) {
 		MTCPListener listener;
@@ -106,7 +115,9 @@ void Dispatcher::run(){
 			Peer* peer = FindPeer(conn);
 
 			switch (atoi(data[0].c_str())) {
+
 			case CONNECT_TO_PEER_INIT:
+			{
 				// Check if dest peer is available, if so send ip, if not send fail
 				Peer* destPeer = this->FindPeer(data[1]);
 				if (this->isPeerAvailable(destPeer)){
@@ -117,7 +128,9 @@ void Dispatcher::run(){
 					TCPMessengerProtocol::sendMsg(conn, FAILURE);
 				}
 				break;
+			}
 			case CONNECT_TO_PEER_RUN:
+			{
 				// Check if ip in data is available
 				Peer* destPeer = this->FindPeer(data[1]);
 				if (this->isPeerAvailable(destPeer)){
@@ -126,21 +139,59 @@ void Dispatcher::run(){
 					TCPMessengerProtocol::sendMsg(conn, SUCCESS, destPeerName);
 
 					// Opens a new session for peers
-					this->OpenSession(peer, destPeer);
+					this->openSession(peer, destPeer);
 				} else {
 					TCPMessengerProtocol::sendMsg(conn, FAILURE);
 				}
 				break;
+			}
+			case GET_ALL_CONNECTED_USERS:
+			{
+				TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllConnectedPeers());
+				break;
+			}
+			case GET_ALL_USERS:
+			{
+				this->handler->onUsersList(conn);
+				break;
+			}
+			case EXIT:
+			{
+				this->removePeer(peer);
+				TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+				break;
+			}
 			default:
-				MessengerProtocol::SendMSG(peer, COMMAND_NOT_FOUND);
+				TCPMessengerProtocol::sendMsg(conn, FAILURE);
 				break;
 			}
 		}
 	}
 }
 
+// Returns a vector of all room names
+vector<string> Dispatcher::getAllRoomNames(){
+	vector<string> roomNames;
+	vector<Chatroom* >::iterator it;
+	for (it = this->chatRooms.begin(); it != this->chatRooms.end(); it++) {
+		Chatroom* chatroom=*it;
+		roomNames.push_back(chatroom->getRoomName());
+	}
+	return roomNames;
+}
+
+// Creates a new chat room
+void Dispatcher::openChatRoom(Peer* roomOwner, string roomName){
+	Chatroom* chatRoom = findChatRoom(roomName);
+	if (chatRoom == NULL) {
+		Chatroom* newChatRoom = new Chatroom(this, roomOwner, roomName);
+		this->removePeer(roomOwner);
+		this->chatRooms.push_back(newChatRoom);
+	}
+}
+
 // Upon session close, add both peers to peers vector and erase session from sessions vector
-void onSessionClose(Session* brocker, Peer* peerA,Peer* peerB){
+void Dispatcher::onSessionClose(Session* brocker, Peer* peerA,Peer* peerB){
 	for (vector<Session*>::iterator it = this->sessions.begin(); it != this->sessions.end();it++) {
 		Session* session = *it;
 		if (session == brocker) {
@@ -149,13 +200,13 @@ void onSessionClose(Session* brocker, Peer* peerA,Peer* peerB){
 		}
 	}
 	// Add both peers to peers vector
-	this->addPeer(peerA);
-	this->addPeer(peerB);
+	if(peerA != NULL) {this->addPeer(peerA);}
+	if(peerB != NULL) {this->addPeer(peerB);}
 }
 
 
 // Opens a new session between two peers
-void Dispatcher::OpenSession(Peer* peerA, Peer* peerB){
+void Dispatcher::openSession(Peer* peerA, Peer* peerB){
 	// Remove both peers from peers vector and open a new session
 	this->removePeer(peerA);
 	this->removePeer(peerB);
@@ -186,6 +237,14 @@ bool Dispatcher::isPeerAvailable(Peer* peer){
 	return isAvailable;
 }
 
+vector<string> Dispatcher::getAllConnectedPeers(){
+	vector<string> userNameList;
+	for (int i=0; i < this->peers.size(); i++) {
+		userNameList.push_back(this->peers[i]->getPeerName());
+	}
+	return userNameList;
+}
+
 // Returns the sockets of the peers in peers vector
 vector<TCPSocket*> Dispatcher::getPeersSockets() {
 	vector<TCPSocket*> peersSockets;
@@ -194,5 +253,31 @@ vector<TCPSocket*> Dispatcher::getPeersSockets() {
 	}
 
 	return peersSockets;
+}
+
+// Sends all connected users to peer by getting all elements of peers vector
+void Dispatcher::onConnectedUsersList(TCPSocket* peer){
+	TCPMessengerProtocol::sendMsg(peer, SUCCESS, this->getAllConnectedPeers());
+}
+
+// Calls Authenticator to send registered users to conn
+void Dispatcher::onUsersList(TCPSocket* peer){
+	this->handler->onUsersList(peer);
+}
+
+// Adds chatRoomPeer to Dispatcher peers vector
+void Dispatcher::onChatRoomExit(Peer* chatRoomPeer){
+	this->addPeer(chatRoomPeer);
+}
+
+// Removes chatroom from vector
+void Dispatcher::onChatRoomClose(Chatroom* broker){
+	vector<Chatroom*>::iterator it;
+	for (it = this->chatRooms.begin(); it != this->chatRooms.end(); it++){
+		Chatroom* chatRoom = *it;
+		if (chatRoom == broker){
+			this->chatRooms.erase(it);
+		}
+	}
 }
 

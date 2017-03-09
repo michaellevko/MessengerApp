@@ -6,16 +6,16 @@
  */
 
 #include "Authenticator.h"
-#include "Parser.cpp"
+#include <iostream>
+#include <fstream>
 #include <algorithm>
 
 #define USERS_FILE "UsersFile"
 
 using namespace std;
-using namespace npl;
 
 Authenticator::Authenticator() {
-	this->dispatcher = new Dispatcher();
+	this->dispatcher = new Dispatcher(this);
 }
 
 // Adds new client connection to authentication list
@@ -205,6 +205,11 @@ void Authenticator::shutdown() {
 
 Dispatcher* Authenticator::getDispatcher(){
 	return this->dispatcher;
+}
+
+// Handler method to return user list
+void Authenticator::onUsersList(TCPSocket* conn){
+	TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllRegisteredUsers());
 }
 
 Authenticator::~Authenticator() {

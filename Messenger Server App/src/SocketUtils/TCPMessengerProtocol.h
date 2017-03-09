@@ -5,8 +5,11 @@
  *      Author: efi
  */
 
+#include <cstdlib>
+#include <sys/socket.h>
+#include <arpa/inet.h>
 #include "TCPSocket.h"
-#include "../Parser.cpp"
+#include "../Parser.h"
 
 #ifndef TCPMESSENGERPROTOCOL_H_
 #define TCPMESSENGERPROTOCOL_H_
@@ -36,10 +39,13 @@
 #define CONNECT_TO_PEER_RUN			15	//ip
 #define CONNECTION_PERMITTED		16	//ip OR ip list seperated by delimiter
 #define CONNECTION_REFUSED			17
-#define ENTER_CHAT_ROOM				18	//roomName
-#define ENTER_CHAT_ROOM_PEER		19
-#define SUCCESS						20
-#define FAILURE						21
+#define CREATE_CHAT_ROOM			18
+#define ENTER_CHAT_ROOM				19	//roomName
+#define EXIT_CHAT_ROOM				20
+#define DESTROY_CHAT_ROOM			21  //roomName
+#define ENTER_CHAT_ROOM_PEER		22
+#define SUCCESS						23
+#define FAILURE						24
 
 #define TEST_PEER_NAME "test"
 #define SESSION_REFUSED_MSG "Connection to peer refused, peer might be busy or disconnected, try again later"

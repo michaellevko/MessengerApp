@@ -8,17 +8,11 @@
 #ifndef SRC_AUTHENTICATOR_H_
 #define SRC_AUTHENTICATOR_H_
 
-#include "./Dispatcher.h"
-#include "./SocketUtils/MThread.h"
-#include <iostream>
-#include <fstream>
-#include "Peer.h"
-
-using namespace npl;
+#include "Dispatcher.h"
 
 using namespace std;
 
-class Authenticator : public MThread {
+class Authenticator : public MThread, public Dispatcher::Handler{
 private:
 	Dispatcher* dispatcher;
 	vector<TCPSocket*> conns;
@@ -35,6 +29,7 @@ public:
 	bool Login(string userName, string password);
 	bool Register(string userName, string password);
 	void removeConn(TCPSocket* conn);
+	void onUsersList(TCPSocket* conn);
 	Authenticator();
 	virtual ~Authenticator();
 };
