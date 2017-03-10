@@ -50,7 +50,9 @@ void Dispatcher::printAllRooms() {
 // Prints all users in a specific room by name
 void Dispatcher::printAllUsersInThisRoom(string roomName) {
 	Chatroom* chatroom = this->findChatRoom(roomName);
-	chatroom->printAllPeersInRoom();
+	if (chatroom != NULL){
+		chatroom->printAllPeersInRoom();
+	}
 }
 
 // Returns a chatroom instance from chatrooms vector by name
