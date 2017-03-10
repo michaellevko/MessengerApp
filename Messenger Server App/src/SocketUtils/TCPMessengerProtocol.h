@@ -53,9 +53,7 @@ public:
 	}
 
 	void static sendMsg(TCPSocket* sock, int command, vector<string> data){
-		int tmp = htonl(command);
-		char* buff = (char*)&tmp;
-		string msg = buff + DELIMITER;
+		string msg = numberToString(command) + DELIMITER;
 		for (int i=0; i<data.size(); i++){
 			msg += data[i] + DELIMITER;
 		}
@@ -63,9 +61,7 @@ public:
 	}
 
 	void static sendMsg(TCPSocket* sock, int command){
-		int tmp = htonl(command);
-		char* buff = (char*)&tmp;
-		string msg = buff + DELIMITER;
+		string msg = numberToString(command) + DELIMITER;
 		sock->send(msg);
 	}
 };

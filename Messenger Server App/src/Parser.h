@@ -17,5 +17,6 @@ using namespace std;
 template<typename Out>
 void split(const string &s, char delim, Out result);
 vector<string> split(const string &s, char delim);
+std::string numberToString ( int number );
 
 #endif /* SRC_PARSER_H_ */

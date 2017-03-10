@@ -21,4 +21,12 @@ vector<string> split(const string &s, char delim) {
 	return elems;
 }
 
+std::string numberToString ( int number )
+{
+ std::ostringstream ss;
+ ss << number;
+ return ss.str();
+}
+
+
 #endif /* PARSER */
