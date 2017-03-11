@@ -45,15 +45,13 @@ void Authenticator::run() {
 				break;
 			}
 			case CREATE_USER:
-			{
 				if (this->Register(data[1], data[2])) {
 					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
 				} else { TCPMessengerProtocol::sendMsg(conn, FAILURE); }
 				break;
-			}
+				
 			case LOGIN_USER:
-			{
-				if (this->Login(data[0], data[1])) {
+				if (this->Login(data[1], data[2])) {
 					Peer * newPeer = new Peer(conn, data[1]);
 					this->getDispatcher()->addPeer(newPeer);
 					this->removeConn(conn);
@@ -62,22 +60,16 @@ void Authenticator::run() {
 					TCPMessengerProtocol::sendMsg(conn, FAILURE);
 				}
 				break;
-			}
+
 			case GET_ALL_CONNECTED_USERS:
-			{
 				TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getDispatcher()->getAllConnectedPeers());
 				break;
-			}
 			case EXIT:
-			{
 				this->removeConn(conn);
 				break;
-			}
 			default:
-			{
 				TCPMessengerProtocol::sendMsg(conn, FAILURE);
 				break;
-			}
 			}
 		}
 	}
@@ -127,7 +119,7 @@ bool Authenticator::Register(string userName, string password){
 	bool ret = false;
 
 	if(!isUserRegistered(userName)){
-		ofstream file(USERS_FILE, ios::out | ios::trunc);
+		ofstream file(USERS_FILE, ios::out | ios::app);
 		if (file.is_open()) {
 			file << userName + ";" + password << endl;
 			file.close();
@@ -165,7 +157,7 @@ bool Authenticator::isUserLegit(string userName, string password){
 	bool isCorrect = false;
 	ifstream file(USERS_FILE, ios::in);
 	if (file.is_open()) {
-		string line, username, password;
+		string line;
 		while(getline(file,line)){
 			vector<std::string> userPass = split(line, DELIMITER);
 			if(userName == userPass[0]){
