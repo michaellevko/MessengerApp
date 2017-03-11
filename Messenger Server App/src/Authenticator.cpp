@@ -81,6 +81,7 @@ bool Authenticator::Login(string userName, string password){
 	bool isUserOk = false;
 	if(this->isUserLegit(userName, password)){
 		isUserOk = true;
+		cout << userName << "Logged in." << endl;
 	}
 	else {
 		cout << "ERROR: " + userName + " isnt a registered user." << endl;
@@ -115,15 +116,14 @@ vector<TCPSocket*>::iterator Authenticator::findConnInVector(TCPSocket* conn) {
 // Attempts to register user in UsersFile
 // returns false if user already exists, true if registered successfully
 bool Authenticator::Register(string userName, string password){
-	cout << userName << ":" << password << endl;
 	bool ret = false;
-
 	if(!isUserRegistered(userName)){
 		ofstream file(USERS_FILE, ios::out | ios::app);
 		if (file.is_open()) {
 			file << userName + ";" + password << endl;
 			file.close();
 			ret = true;
+			cout << "Registered " << userName << ":" << password << endl;
 		} else
 			cout << "ERROR: Unable to open UserPass file" << endl;
 	}
