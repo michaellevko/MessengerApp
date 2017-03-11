@@ -124,30 +124,50 @@ void Dispatcher::run(){
 
 				case CONNECT_TO_PEER_INIT:
 				{
-					// Check if dest peer is available, if so send ip, if not send fail
-					Peer* destPeer = this->FindPeer(data[1]);
-					if (this->isPeerAvailable(destPeer)){
-						vector<string> destPeerAddress;
-						destPeerAddress.push_back(inet_ntoa(destPeer->getPeerSock()->getPeerAddr().sin_addr));
-						TCPMessengerProtocol::sendMsg(conn, SUCCESS, destPeerAddress);
-					} else {
+					if (data.size() > 1)
+					{
+						// Check if dest peer is available, if so send ip, if not send fail
+						Peer* destPeer = this->FindPeer(data[1]);
+						if (this->isPeerAvailable(destPeer)){
+							vector<string> destPeerAddress;
+							destPeerAddress.push_back(inet_ntoa(destPeer->getPeerSock()->getPeerAddr().sin_addr));
+							TCPMessengerProtocol::sendMsg(conn, SUCCESS, destPeerAddress);
+						}
+						else
+						{
+							TCPMessengerProtocol::sendMsg(conn, FAILURE);
+						}
+					}
+					else
+					{
 						TCPMessengerProtocol::sendMsg(conn, FAILURE);
+						cout << "connect to peer without peer data" << endl;
 					}
 					break;
 				}
 				case CONNECT_TO_PEER_RUN:
 				{
-					// Check if ip in data is available
-					Peer* destPeer = this->FindPeer(data[1]);
-					if (this->isPeerAvailable(destPeer)){
-						vector<string> destPeerName;
-						destPeerName.push_back(destPeer->getPeerName());
-						TCPMessengerProtocol::sendMsg(conn, SUCCESS, destPeerName);
+					if (data.size() > 1)
+					{
+						// Check if ip in data is available
+						Peer* destPeer = this->FindPeer(data[1]);
+						if (this->isPeerAvailable(destPeer)){
+							vector<string> destPeerName;
+							destPeerName.push_back(destPeer->getPeerName());
+							TCPMessengerProtocol::sendMsg(conn, SUCCESS, destPeerName);
 
-						// Opens a new session for peers
-						this->openSession(peer, destPeer);
-					} else {
+							// Opens a new session for peers
+							this->openSession(peer, destPeer);
+						}
+						else
+						{
+							TCPMessengerProtocol::sendMsg(conn, FAILURE);
+						}
+					}
+					else
+					{
 						TCPMessengerProtocol::sendMsg(conn, FAILURE);
+						cout << "connect to peer without peer data" << endl;
 					}
 					break;
 				}
@@ -163,12 +183,20 @@ void Dispatcher::run(){
 				}
 				case GET_ALL_USERS_IN_ROOM:
 				{
-					string roomName = data[1];
-					Chatroom* room = this->findChatRoom(roomName);
-					if (room != NULL){
-						TCPMessengerProtocol::sendMsg(conn, SUCCESS, room->getRoomPeersNames(roomName));
-					} else {
+					if (data.size() > 1)
+					{
+						string roomName = data[1];
+						Chatroom* room = this->findChatRoom(roomName);
+						if (room != NULL){
+							TCPMessengerProtocol::sendMsg(conn, SUCCESS, room->getRoomPeersNames(roomName));
+						} else {
+							TCPMessengerProtocol::sendMsg(conn, FAILURE);
+						}
+					}
+					else
+					{
 						TCPMessengerProtocol::sendMsg(conn, FAILURE);
+						cout << "get users in room without room name" << endl;
 					}
 					break;
 				}
@@ -179,25 +207,41 @@ void Dispatcher::run(){
 				}
 				case CREATE_CHAT_ROOM:
 				{
-					string roomName = data[1];
-					Chatroom* room = this->findChatRoom(roomName);
-					if(room == NULL){
-						this->openChatRoom(peer, roomName);
-						TCPMessengerProtocol::sendMsg(conn, SUCCESS);
-					} else {
+					if (data.size() > 1)
+					{
+						string roomName = data[1];
+						Chatroom* room = this->findChatRoom(roomName);
+						if(room == NULL){
+							this->openChatRoom(peer, roomName);
+							TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+						} else {
+							TCPMessengerProtocol::sendMsg(conn, FAILURE);
+						}
+					}
+					else
+					{
 						TCPMessengerProtocol::sendMsg(conn, FAILURE);
+						cout << "create chat room without room name" << endl;
 					}
 					break;
 				}
 				case ENTER_CHAT_ROOM:
 				{
-					string roomName = data[1];
-					Chatroom* room = this->findChatRoom(roomName);
-					if(room != NULL){
-						this->enterChatRoom(peer, room);
-						TCPMessengerProtocol::sendMsg(conn, SUCCESS);
-					} else {
+					if (data.size() > 1)
+					{
+						string roomName = data[1];
+						Chatroom* room = this->findChatRoom(roomName);
+						if(room != NULL){
+							this->enterChatRoom(peer, room);
+							TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+						} else {
+							TCPMessengerProtocol::sendMsg(conn, FAILURE);
+						}
+					}
+					else
+					{
 						TCPMessengerProtocol::sendMsg(conn, FAILURE);
+						cout << "enter chat room without room name" << endl;
 					}
 					break;
 				}

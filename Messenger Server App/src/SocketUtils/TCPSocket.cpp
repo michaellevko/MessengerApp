@@ -41,6 +41,10 @@ TCPSocket::TCPSocket(int port){
 	serverAddr.sin_addr.s_addr = htonl(INADDR_ANY);    /* WILDCARD */
 	serverAddr.sin_port = htons((u_short)port);
 
+	int enable = 1;
+	if (setsockopt(socket_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0)
+	  cout << "setsockopt(SO_REUSEADDR) failed" << endl;
+
 	//bind the socket on the specified address
 	printf("TCP server binding...\n");
 	if (bind(socket_fd, (struct sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
