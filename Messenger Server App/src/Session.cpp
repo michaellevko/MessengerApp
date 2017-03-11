@@ -20,7 +20,7 @@ void Session::run(){
 		MTCPListener listener;
 		listener.add(this->peerA->getPeerSock());
 		listener.add(this->peerB->getPeerSock());
-		TCPSocket * peer = listener.listen();
+		TCPSocket * peer = listener.listen(LISTEN_TIMEOUT);
 		if (peer != NULL) {
 			vector<string> data;
 			data = TCPMessengerProtocol::readMsg(peer);

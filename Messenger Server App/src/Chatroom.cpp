@@ -27,7 +27,7 @@ string Chatroom::getRoomName() {
 }
 
 // Returns vector of peers in room by roomName
-vector<Peer*> Chatroom::getRoomPeers(string roomName){
+vector<Peer*> Chatroom::getRoomPeers(){
 	return this->chatRoomPeers;
 }
 
@@ -62,7 +62,7 @@ void Chatroom::run(){
 	while (this->chatActive) {
 		MTCPListener listener;
 		listener.add(this->getPeersSockets());
-		TCPSocket * peer = listener.listen();
+		TCPSocket * peer = listener.listen(LISTEN_TIMEOUT);
 		if (peer != NULL) {
 			vector<string> data;
 			data = TCPMessengerProtocol::readMsg(peer);

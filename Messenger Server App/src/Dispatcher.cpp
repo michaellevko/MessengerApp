@@ -126,7 +126,7 @@ void Dispatcher::run(){
 	while (this->peers.size() > 0) {
 		MTCPListener listener;
 		listener.add(this->getPeersSockets());
-		TCPSocket * conn = listener.listen();
+		TCPSocket * conn = listener.listen(LISTEN_TIMEOUT);
 
 		if (conn != NULL) {
 			dataIn = TCPMessengerProtocol::readMsg(conn);
@@ -249,8 +249,9 @@ void Dispatcher::run(){
 						string roomName = dataIn[1];
 						Chatroom* room = this->findChatRoom(roomName);
 						if(room != NULL){
-							this->enterChatRoom(peer, room);
-							TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+							vector<string> roomPeersDetails;
+							roomPeersDetails = this->enterChatRoom(peer, room);
+							TCPMessengerProtocol::sendMsg(conn, SUCCESS, roomPeersDetails);
 						} else {
 							TCPMessengerProtocol::sendMsg(conn, FAILURE);
 						}
@@ -278,9 +279,20 @@ void Dispatcher::run(){
 }
 
 // Adds peer to existing chatroom by roomname
-void Dispatcher::enterChatRoom(Peer* peer, Chatroom* room){
+vector<string> Dispatcher::enterChatRoom(Peer* peer, Chatroom* room){
+	vector<string> roomPeersDetails;
+	vector<Peer*> roomPeers = room->getRoomPeers();
+	vector<Peer*>::iterator it;
+	for(it = roomPeers.begin(); it != roomPeers.end(); it++){
+		Peer* peer = *it;
+		string ip = inet_ntoa(peer->getPeerSock()->getPeerAddr().sin_addr);
+		roomPeersDetails.push_back(peer->getPeerName());
+		roomPeersDetails.push_back(ip);
+	}
 	this->removePeer(peer);
 	room->addPeer(peer);
+
+	return roomPeersDetails;
 }
 
 // Returns a vector of all room names

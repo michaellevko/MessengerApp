@@ -51,7 +51,7 @@ public:
 	void printAllUsersInThisRoom(string roomName);
 	void openSession(Peer* peerA, Peer* peerB);
 	void openChatRoom(Peer* roomOwner, string roomName);
-	void enterChatRoom(Peer* peer, Chatroom* room);
+	vector<string> enterChatRoom(Peer* peer, Chatroom* room);
 
 	void onSessionClose(Session* brocker,Peer* connA,Peer* connB);
 	void onConnectedUsersList(TCPSocket* peer);
