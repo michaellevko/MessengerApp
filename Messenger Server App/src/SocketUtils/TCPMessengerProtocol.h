@@ -40,6 +40,7 @@
 #define GET_ALL_USERS_IN_ROOM		17	//roomName
 
 const int MAX_MSG_LEN = 256;
+const int LISTEN_TIMEOUT = 10;
 
 using namespace std;
 

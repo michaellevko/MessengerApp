@@ -30,7 +30,7 @@ void Authenticator::run() {
 	while (conns.size() > 0) {
 		MTCPListener listener;
 		listener.add(this->conns);
-		TCPSocket* conn = listener.listen();
+		TCPSocket* conn = listener.listen(LISTEN_TIMEOUT);
 
 		if (conn != NULL) {
 			vector<string> data;
