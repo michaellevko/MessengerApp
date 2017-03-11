@@ -116,97 +116,101 @@ void Dispatcher::run(){
 			data = TCPMessengerProtocol::readMsg(conn);
 			Peer* peer = FindPeer(conn);
 
-			switch (atoi(data[0].c_str())) {
-
-			case CONNECT_TO_PEER_INIT:
-			{
-				// Check if dest peer is available, if so send ip, if not send fail
-				Peer* destPeer = this->FindPeer(data[1]);
-				if (this->isPeerAvailable(destPeer)){
-					vector<string> destPeerAddress;
-					destPeerAddress.push_back(inet_ntoa(destPeer->getPeerSock()->getPeerAddr().sin_addr));
-					TCPMessengerProtocol::sendMsg(conn, SUCCESS, destPeerAddress);
-				} else {
-					TCPMessengerProtocol::sendMsg(conn, FAILURE);
-				}
-				break;
-			}
-			case CONNECT_TO_PEER_RUN:
-			{
-				// Check if ip in data is available
-				Peer* destPeer = this->FindPeer(data[1]);
-				if (this->isPeerAvailable(destPeer)){
-					vector<string> destPeerName;
-					destPeerName.push_back(destPeer->getPeerName());
-					TCPMessengerProtocol::sendMsg(conn, SUCCESS, destPeerName);
-
-					// Opens a new session for peers
-					this->openSession(peer, destPeer);
-				} else {
-					TCPMessengerProtocol::sendMsg(conn, FAILURE);
-				}
-				break;
-			}
-			case GET_ALL_CONNECTED_USERS:
-			{
-				TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllConnectedPeers());
-				break;
-			}
-			case GET_ALL_USERS:
-			{
-				this->handler->onUsersList(conn);
-				break;
-			}
-			case GET_ALL_USERS_IN_ROOM:
-			{
-				string roomName = data[1];
-				Chatroom* room = this->findChatRoom(roomName);
-				if (room != NULL){
-					TCPMessengerProtocol::sendMsg(conn, SUCCESS, room->getRoomPeersNames(roomName));
-				} else {
-					TCPMessengerProtocol::sendMsg(conn, FAILURE);
-				}
-				break;
-			}
-			case GET_ALL_ROOMS:
-			{
-				TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllRoomNames());
-				break;
-			}
-			case CREATE_CHAT_ROOM:
-			{
-				string roomName = data[1];
-				Chatroom* room = this->findChatRoom(roomName);
-				if(room == NULL){
-					this->openChatRoom(peer, roomName);
-					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
-				} else {
-					TCPMessengerProtocol::sendMsg(conn, FAILURE);
-				}
-				break;
-			}
-			case ENTER_CHAT_ROOM:
-			{
-				string roomName = data[1];
-				Chatroom* room = this->findChatRoom(roomName);
-				if(room != NULL){
-					this->enterChatRoom(peer, room);
-					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
-				} else {
-					TCPMessengerProtocol::sendMsg(conn, FAILURE);
-				}
-				break;
-			}
-			case EXIT:
-			{
+			// Check if client disconnected
+			if (data.size() == 0){
 				this->removePeer(peer);
-				TCPMessengerProtocol::sendMsg(conn, SUCCESS);
-				break;
-			}
-			default:
-				TCPMessengerProtocol::sendMsg(conn, FAILURE);
-				break;
-			}
+			} else {
+				switch (atoi(data[0].c_str())) {
+
+				case CONNECT_TO_PEER_INIT:
+				{
+					// Check if dest peer is available, if so send ip, if not send fail
+					Peer* destPeer = this->FindPeer(data[1]);
+					if (this->isPeerAvailable(destPeer)){
+						vector<string> destPeerAddress;
+						destPeerAddress.push_back(inet_ntoa(destPeer->getPeerSock()->getPeerAddr().sin_addr));
+						TCPMessengerProtocol::sendMsg(conn, SUCCESS, destPeerAddress);
+					} else {
+						TCPMessengerProtocol::sendMsg(conn, FAILURE);
+					}
+					break;
+				}
+				case CONNECT_TO_PEER_RUN:
+				{
+					// Check if ip in data is available
+					Peer* destPeer = this->FindPeer(data[1]);
+					if (this->isPeerAvailable(destPeer)){
+						vector<string> destPeerName;
+						destPeerName.push_back(destPeer->getPeerName());
+						TCPMessengerProtocol::sendMsg(conn, SUCCESS, destPeerName);
+
+						// Opens a new session for peers
+						this->openSession(peer, destPeer);
+					} else {
+						TCPMessengerProtocol::sendMsg(conn, FAILURE);
+					}
+					break;
+				}
+				case GET_ALL_CONNECTED_USERS:
+				{
+					TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllConnectedPeers());
+					break;
+				}
+				case GET_ALL_USERS:
+				{
+					this->handler->onUsersList(conn);
+					break;
+				}
+				case GET_ALL_USERS_IN_ROOM:
+				{
+					string roomName = data[1];
+					Chatroom* room = this->findChatRoom(roomName);
+					if (room != NULL){
+						TCPMessengerProtocol::sendMsg(conn, SUCCESS, room->getRoomPeersNames(roomName));
+					} else {
+						TCPMessengerProtocol::sendMsg(conn, FAILURE);
+					}
+					break;
+				}
+				case GET_ALL_ROOMS:
+				{
+					TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllRoomNames());
+					break;
+				}
+				case CREATE_CHAT_ROOM:
+				{
+					string roomName = data[1];
+					Chatroom* room = this->findChatRoom(roomName);
+					if(room == NULL){
+						this->openChatRoom(peer, roomName);
+						TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+					} else {
+						TCPMessengerProtocol::sendMsg(conn, FAILURE);
+					}
+					break;
+				}
+				case ENTER_CHAT_ROOM:
+				{
+					string roomName = data[1];
+					Chatroom* room = this->findChatRoom(roomName);
+					if(room != NULL){
+						this->enterChatRoom(peer, room);
+						TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+					} else {
+						TCPMessengerProtocol::sendMsg(conn, FAILURE);
+					}
+					break;
+				}
+				case EXIT:
+				{
+					this->removePeer(peer);
+					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+					break;
+				}
+				default:
+					TCPMessengerProtocol::sendMsg(conn, FAILURE);
+					break;
+				}}
 		}
 	}
 }

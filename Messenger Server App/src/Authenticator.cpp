@@ -36,40 +36,51 @@ void Authenticator::run() {
 			vector<string> data;
 			data = TCPMessengerProtocol::readMsg(conn);
 
-
-			switch (atoi(data[0].c_str())) {
-
-			case GET_ALL_USERS:
-			{
-				TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllRegisteredUsers());
-				break;
-			}
-			case CREATE_USER:
-				if (this->Register(data[1], data[2])) {
-					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
-				} else { TCPMessengerProtocol::sendMsg(conn, FAILURE); }
-				break;
-				
-			case LOGIN_USER:
-				if (this->Login(data[1], data[2])) {
-					Peer * newPeer = new Peer(conn, data[1]);
-					this->getDispatcher()->addPeer(newPeer);
-					this->removeConn(conn);
-					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
-				} else {
-					TCPMessengerProtocol::sendMsg(conn, FAILURE);
-				}
-				break;
-
-			case GET_ALL_CONNECTED_USERS:
-				TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getDispatcher()->getAllConnectedPeers());
-				break;
-			case EXIT:
+			// Check if client disconnected
+			if (data.size() == 0){
 				this->removeConn(conn);
-				break;
-			default:
-				TCPMessengerProtocol::sendMsg(conn, FAILURE);
-				break;
+			} else {
+				switch (atoi(data[0].c_str())) {
+
+				case GET_ALL_USERS:
+				{
+					TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllRegisteredUsers());
+					break;
+				}
+				case CREATE_USER:
+				{
+					if (this->Register(data[1], data[2])) {
+						TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+					} else { TCPMessengerProtocol::sendMsg(conn, FAILURE); }
+					break;
+				}
+				case LOGIN_USER:
+				{
+					if (this->Login(data[1], data[2])) {
+						Peer * newPeer = new Peer(conn, data[1]);
+						this->getDispatcher()->addPeer(newPeer);
+						this->removeConn(conn);
+						TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+					} else {
+						TCPMessengerProtocol::sendMsg(conn, FAILURE);
+					}
+					break;
+				}
+				case GET_ALL_CONNECTED_USERS:
+				{
+					TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getDispatcher()->getAllConnectedPeers());
+					break;
+				}
+				case EXIT:
+				{
+					this->removeConn(conn);
+					break;
+				}
+				default:
+				{
+					TCPMessengerProtocol::sendMsg(conn, FAILURE);
+					break;
+				}}
 			}
 		}
 	}
@@ -81,7 +92,7 @@ bool Authenticator::Login(string userName, string password){
 	bool isUserOk = false;
 	if(this->isUserLegit(userName, password)){
 		isUserOk = true;
-		cout << userName << "Logged in." << endl;
+		cout << "User " << userName << " logged in." << endl;
 	}
 	else {
 		cout << "ERROR: " + userName + " isnt a registered user." << endl;

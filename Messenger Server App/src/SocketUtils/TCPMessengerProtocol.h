@@ -47,8 +47,11 @@ class TCPMessengerProtocol{
 public:
 	static vector<string> readMsg(TCPSocket* sock){
 		char buffer[512];
-		sock->recv(buffer, MAX_MSG_LEN);
-
+		int rc = sock->recv(buffer, MAX_MSG_LEN);
+		if (rc <= 0){
+			vector<string> empty;
+			return empty;
+		}
 		return split(buffer, DELIMITER);
 	}
 

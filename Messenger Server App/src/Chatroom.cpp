@@ -67,41 +67,54 @@ void Chatroom::run(){
 			vector<string> data;
 			data = TCPMessengerProtocol::readMsg(peer);
 			Peer* sender = this->FindPeer(peer);
-			switch (atoi(data[0].c_str())) {
 
-			case DESTROY_CHAT_ROOM:
-				if((sender == this->chatRoomOwner) && (this->chatRoomPeers.size() == 0)){
-					this->closeRoom();
-					TCPMessengerProtocol::sendMsg(peer, SUCCESS);
-				} else {
-					TCPMessengerProtocol::sendMsg(peer, FAILURE);
+			// Check if client disconnected
+			if (data.size() == 0){
+				this->removePeer(sender);
+			} else {
+				switch (atoi(data[0].c_str())) {
+
+				case DESTROY_CHAT_ROOM:
+				{
+					if((sender == this->chatRoomOwner) && (this->chatRoomPeers.size() == 0)){
+						this->closeRoom();
+						TCPMessengerProtocol::sendMsg(peer, SUCCESS);
+					} else {
+						TCPMessengerProtocol::sendMsg(peer, FAILURE);
+					}
+					break;
 				}
-				break;
-
-			case GET_ALL_USERS_IN_ROOM:
+				case GET_ALL_USERS_IN_ROOM:
+				{
 					TCPMessengerProtocol::sendMsg(peer, SUCCESS, this->getRoomPeersNames(this->getRoomName()));
-				break;
-
-			case GET_ALL_USERS:
+					break;
+				}
+				case GET_ALL_USERS:
+				{
 					this->handler->onUsersList(peer);
-				break;
-
-			case EXIT_CHAT_ROOM:
+					break;
+				}
+				case EXIT_CHAT_ROOM:
+				{
 					this->removePeer(sender);
 					this->handler->onChatRoomExit(sender);
 					TCPMessengerProtocol::sendMsg(peer,SUCCESS);
-				break;
-
-			case EXIT:
+					break;
+				}
+				case EXIT:
+				{
 					TCPMessengerProtocol::sendMsg(peer,FAILURE);
-				break;
-
-			case GET_ALL_CONNECTED_USERS:
+					break;
+				}
+				case GET_ALL_CONNECTED_USERS:
+				{
 					handler->onConnectedUsersList(peer);
-				break;
-
-			default:
-				TCPMessengerProtocol::sendMsg(peer, FAILURE);
+					break;
+				}
+				default:
+				{
+					TCPMessengerProtocol::sendMsg(peer, FAILURE);
+				}}
 			}
 		}
 	}

@@ -25,27 +25,33 @@ void Session::run(){
 			vector<string> data;
 			data = TCPMessengerProtocol::readMsg(peer);
 			Peer* sender = FindPeer(peer);
-			switch (atoi(data[0].c_str())) {
 
-			case GET_ALL_CONNECTED_USERS:
-			{
-				this->handler->onConnectedUsersList(peer);
-				break;
+			// Check if client disconnected
+			if (data.size() == 0){
+				this->close();
+			} else {
+				switch (atoi(data[0].c_str())) {
+
+				case GET_ALL_CONNECTED_USERS:
+				{
+					this->handler->onConnectedUsersList(peer);
+					break;
+				}
+				case GET_ALL_USERS:
+				{
+					this->handler->onUsersList(peer);
+					break;
+				}
+				case CLOSE_SESSION_WITH_PEER:
+				{
+					close();
+					break;
+				}
+				default:
+				{
+					TCPMessengerProtocol::sendMsg(peer, FAILURE);
+				}}
 			}
-			case GET_ALL_USERS:
-			{
-				this->handler->onUsersList(peer);
-				break;
-			}
-			case CLOSE_SESSION_WITH_PEER:
-			{
-				close();
-				break;
-			}
-			default:
-			{
-				TCPMessengerProtocol::sendMsg(peer, FAILURE);
-			}}
 		}
 		delete this;
 	}
