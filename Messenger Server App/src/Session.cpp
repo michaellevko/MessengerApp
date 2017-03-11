@@ -29,6 +29,7 @@ void Session::run(){
 			// Check if client disconnected
 			if (data.size() == 0){
 				this->close();
+				this->handler->onPeerDisconnect(sender);
 			} else {
 				switch (atoi(data[0].c_str())) {
 

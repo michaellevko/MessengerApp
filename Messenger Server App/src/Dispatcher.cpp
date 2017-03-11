@@ -21,7 +21,7 @@ Dispatcher::~Dispatcher() {
 void Dispatcher::printAllConnectedUsers() {
 	cout<<"Online users :"<<endl;
 	vector<Peer*>::iterator it;
-	for (it = this->peers.begin(); it != this->peers.end(); it++) {
+	for (it = this->allConnectedPeers.begin(); it != this->allConnectedPeers.end(); it++) {
 		Peer* peer=*it;
 		cout<<peer->getPeerName()<<endl;
 	}
@@ -100,6 +100,7 @@ Peer* Dispatcher::FindPeer(string userName) {
 void Dispatcher::addPeer(Peer* peer){
 	pthread_mutex_lock(&peerlistlock);
 	this->peers.push_back(peer);
+	this->allConnectedPeers.push_back(peer);
 	pthread_mutex_unlock(&peerlistlock);
 	if (peers.size() == 1)
 		start();
@@ -119,6 +120,7 @@ void Dispatcher::run(){
 			// Check if client disconnected
 			if (data.size() == 0){
 				this->removePeer(peer);
+				this->onPeerDisconnect(peer);
 			} else {
 				switch (atoi(data[0].c_str())) {
 
@@ -248,6 +250,7 @@ void Dispatcher::run(){
 				case EXIT:
 				{
 					this->removePeer(peer);
+					this->onPeerDisconnect(peer);
 					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
 					break;
 				}
@@ -322,6 +325,19 @@ void Dispatcher::removePeer(Peer* peer){
 	}
 }
 
+// Removes peer from allConnectedPeers vector
+void Dispatcher::onPeerDisconnect(Peer* peer){
+	vector<Peer*>::iterator it;
+	for (it = this->allConnectedPeers.begin(); it != this->allConnectedPeers.end(); it++) {
+		Peer* user = *it;
+		if (user->getPeerName() == peer->getPeerName())
+			break;
+	}
+	if (it != this->allConnectedPeers.end()) {
+		this->allConnectedPeers.erase(it);
+	}
+}
+
 // Checks if peer socket is in peers vector and not in sessions or chatrooms vectors
 // returns true if so, returns false otherwise
 bool Dispatcher::isPeerAvailable(Peer* peer){
@@ -334,8 +350,8 @@ bool Dispatcher::isPeerAvailable(Peer* peer){
 
 vector<string> Dispatcher::getAllConnectedPeers(){
 	vector<string> userNameList;
-	for (int i=0; i < this->peers.size(); i++) {
-		userNameList.push_back(this->peers[i]->getPeerName());
+	for (int i=0; i < this->allConnectedPeers.size(); i++) {
+		userNameList.push_back(this->allConnectedPeers[i]->getPeerName());
 	}
 	return userNameList;
 }

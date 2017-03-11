@@ -20,6 +20,7 @@ public:
 		virtual void onUsersList(TCPSocket* peer)=0;
 	};
 private:
+	vector<Peer*> allConnectedPeers;
 	vector<Peer*> peers;
 	vector<Session*> sessions;
 	vector<Chatroom*> chatRooms;
@@ -53,6 +54,7 @@ public:
 	void onUsersList(TCPSocket* peer);
 	void onChatRoomExit(Peer* chatRoomPeer);
 	void onChatRoomClose(Chatroom* brocker);
+	void onPeerDisconnect(Peer* peer);
 };
 
 #endif /* SRC_DISPATCHER_H_ */

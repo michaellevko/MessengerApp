@@ -21,6 +21,7 @@ public:
 		virtual void onChatRoomExit(Peer* chatRoomPeer)=0;
 		virtual void onUsersList(TCPSocket* peer)=0;
 		virtual void onConnectedUsersList(TCPSocket* peer)=0;
+		virtual void onPeerDisconnect(Peer* peer)=0;
 	};
 private:
 	vector<Peer*> chatRoomPeers;

@@ -71,6 +71,7 @@ void Chatroom::run(){
 			// Check if client disconnected
 			if (data.size() == 0){
 				this->removePeer(sender);
+				this->handler->onPeerDisconnect(sender);
 			} else {
 				switch (atoi(data[0].c_str())) {
 
@@ -99,11 +100,6 @@ void Chatroom::run(){
 					this->removePeer(sender);
 					this->handler->onChatRoomExit(sender);
 					TCPMessengerProtocol::sendMsg(peer,SUCCESS);
-					break;
-				}
-				case EXIT:
-				{
-					TCPMessengerProtocol::sendMsg(peer,FAILURE);
 					break;
 				}
 				case GET_ALL_CONNECTED_USERS:
