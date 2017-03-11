@@ -176,7 +176,7 @@ void Dispatcher::run(){
 			case CREATE_CHAT_ROOM:
 			{
 				string roomName = data[1];
-				Chatroom room = this->findChatRoom(roomName);
+				Chatroom* room = this->findChatRoom(roomName);
 				if(room == NULL){
 					this->openChatRoom(peer, roomName);
 					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
@@ -215,20 +215,6 @@ void Dispatcher::run(){
 void Dispatcher::enterChatRoom(Peer* peer, Chatroom* room){
 	this->removePeer(peer);
 	room->addPeer(peer);
-}
-
-// Returns chatroom by name
-Chatroom* Dispatcher::findChatRoom(string roomName){
-	Chatroom* chatRoom;
-	vector<Chatroom* >::iterator it;
-	for (it = this->chatRooms.begin(); it != this->chatRooms.end(); it++) {
-		Chatroom* room=*it;
-		if (room->getRoomName() == roomName){
-			chatRoom = *it;
-			break;
-		}
-	}
-	return chatRoom;
 }
 
 // Returns a vector of all room names
