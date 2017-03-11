@@ -21,30 +21,36 @@ Dispatcher::~Dispatcher() {
 void Dispatcher::printAllConnectedUsers() {
 	cout<<"Online users :"<<endl;
 	vector<Peer*>::iterator it;
+	pthread_mutex_lock(&connectedpeerslistlock);
 	for (it = this->allConnectedPeers.begin(); it != this->allConnectedPeers.end(); it++) {
 		Peer* peer=*it;
 		cout<<peer->getPeerName()<<endl;
 	}
+	pthread_mutex_unlock(&connectedpeerslistlock);
 }
 
 // Prints all sessions in sessions vector to server console
 void Dispatcher::printAllSessions() {
 	cout<<"Active sessions :"<<endl;
 	vector<Session*>::iterator it;
+	pthread_mutex_lock(&sessionslock);
 	for (it = this->sessions.begin(); it != this->sessions.end(); it++) {
 		Session* session=*it;
 		cout<<"session with" <<session->getPeerA()->getPeerName()<<" and "<<session->getPeerB()->getPeerName()<<endl;
 	}
+	pthread_mutex_unlock(&sessionslock);
 }
 
 // Prints all rooms in chatrooms vector to server console
 void Dispatcher::printAllRooms() {
 	cout<<"Active rooms :"<<endl;
 	vector<Chatroom* >::iterator it;
+	pthread_mutex_lock(&chatRoomslock);
 	for (it = this->chatRooms.begin(); it != this->chatRooms.end(); it++) {
 		Chatroom* chatroom=*it;
 		cout<<chatroom->getRoomName()<<endl;
 	}
+	pthread_mutex_unlock(&chatRoomslock);
 }
 
 // Prints all users in a specific room by name
@@ -59,12 +65,14 @@ void Dispatcher::printAllUsersInThisRoom(string roomName) {
 Chatroom* Dispatcher::findChatRoom(string roomName) {
 	vector<Chatroom*>::iterator it;
 	Chatroom* ret = NULL;
+	pthread_mutex_lock(&chatRoomslock);
 	for (it = this->chatRooms.begin(); it != this->chatRooms.end(); it++) {
 		Chatroom* room = *it;
 		if (room->getRoomName() == roomName) {
 			ret = room;
 		}
 	}
+	pthread_mutex_unlock(&chatRoomslock);
 	return ret;
 }
 
@@ -115,8 +123,10 @@ Peer* Dispatcher::FindPeerByIP(string address) {
 void Dispatcher::addPeer(Peer* peer){
 	pthread_mutex_lock(&peerlistlock);
 	this->peers.push_back(peer);
-	this->allConnectedPeers.push_back(peer);
 	pthread_mutex_unlock(&peerlistlock);
+	pthread_mutex_lock(&connectedpeerslistlock);
+	this->allConnectedPeers.push_back(peer);
+	pthread_mutex_unlock(&connectedpeerslistlock);
 	if (peers.size() == 1)
 		start();
 }
@@ -231,6 +241,7 @@ void Dispatcher::run(){
 						if(room == NULL){
 							this->openChatRoom(peer, roomName);
 							TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+							cout << peer->getPeerName() << " has created room " << roomName << endl;
 						} else {
 							TCPMessengerProtocol::sendMsg(conn, FAILURE);
 						}
@@ -252,6 +263,7 @@ void Dispatcher::run(){
 							vector<string> roomPeersDetails;
 							roomPeersDetails = this->enterChatRoom(peer, room);
 							TCPMessengerProtocol::sendMsg(conn, SUCCESS, roomPeersDetails);
+							cout << peer->getPeerName() << " has entered room " << roomName << endl;
 						} else {
 							TCPMessengerProtocol::sendMsg(conn, FAILURE);
 						}
@@ -299,10 +311,12 @@ vector<string> Dispatcher::enterChatRoom(Peer* peer, Chatroom* room){
 vector<string> Dispatcher::getAllRoomNames(){
 	vector<string> roomNames;
 	vector<Chatroom* >::iterator it;
+	pthread_mutex_lock(&chatRoomslock);
 	for (it = this->chatRooms.begin(); it != this->chatRooms.end(); it++) {
 		Chatroom* chatroom=*it;
 		roomNames.push_back(chatroom->getRoomName());
 	}
+	pthread_mutex_unlock(&chatRoomslock);
 	return roomNames;
 }
 
@@ -311,12 +325,15 @@ void Dispatcher::openChatRoom(Peer* roomOwner, string roomName){
 	Chatroom* chatRoom = findChatRoom(roomName);
 	if (chatRoom == NULL) {
 		Chatroom* newChatRoom = new Chatroom(this, roomOwner, roomName);
+		pthread_mutex_lock(&chatRoomslock);
 		this->chatRooms.push_back(newChatRoom);
+		pthread_mutex_unlock(&chatRoomslock);
 	}
 }
 
 // Upon session close, add both peers to peers vector and erase session from sessions vector
 void Dispatcher::onSessionClose(Session* brocker, Peer* peerA,Peer* peerB){
+	pthread_mutex_lock(&sessionslock);
 	for (vector<Session*>::iterator it = this->sessions.begin(); it != this->sessions.end();it++) {
 		Session* session = *it;
 		if (session == brocker) {
@@ -324,6 +341,7 @@ void Dispatcher::onSessionClose(Session* brocker, Peer* peerA,Peer* peerB){
 			break;
 		}
 	}
+	pthread_mutex_unlock(&sessionslock);
 	// Add both peers to peers vector
 	if(peerA != NULL) {this->addPeer(peerA);}
 	if(peerB != NULL) {this->addPeer(peerB);}
@@ -336,12 +354,15 @@ void Dispatcher::openSession(Peer* peerA, Peer* peerB){
 	this->removePeer(peerA);
 	this->removePeer(peerB);
 	Session* session = new Session(this, peerA, peerB);
+	pthread_mutex_lock(&sessionslock);
 	this->sessions.push_back(session);
+	pthread_mutex_unlock(&sessionslock);
 }
 
 // Removes peer from peers vector
 void Dispatcher::removePeer(Peer* peer){
 	vector<Peer*>::iterator it;
+	pthread_mutex_lock(&peerlistlock);
 	for (it = this->peers.begin(); it != this->peers.end(); it++) {
 		Peer* user = *it;
 		if (user->getPeerName() == peer->getPeerName())
@@ -350,11 +371,13 @@ void Dispatcher::removePeer(Peer* peer){
 	if (it != this->peers.end()) {
 		this->peers.erase(it);
 	}
+	pthread_mutex_unlock(&peerlistlock);
 }
 
 // Removes peer from allConnectedPeers vector
 void Dispatcher::onPeerDisconnect(Peer* peer){
 	vector<Peer*>::iterator it;
+	pthread_mutex_lock(&connectedpeerslistlock);
 	for (it = this->allConnectedPeers.begin(); it != this->allConnectedPeers.end(); it++) {
 		Peer* user = *it;
 		if (user->getPeerName() == peer->getPeerName())
@@ -363,6 +386,7 @@ void Dispatcher::onPeerDisconnect(Peer* peer){
 	if (it != this->allConnectedPeers.end()) {
 		this->allConnectedPeers.erase(it);
 	}
+	pthread_mutex_unlock(&connectedpeerslistlock);
 }
 
 // Checks if peer socket is in peers vector and not in sessions or chatrooms vectors
@@ -377,9 +401,11 @@ bool Dispatcher::isPeerAvailable(Peer* peer){
 
 vector<string> Dispatcher::getAllConnectedPeers(){
 	vector<string> userNameList;
+	pthread_mutex_lock(&connectedpeerslistlock);
 	for (int i=0; i < this->allConnectedPeers.size(); i++) {
 		userNameList.push_back(this->allConnectedPeers[i]->getPeerName());
 	}
+	pthread_mutex_unlock(&connectedpeerslistlock);
 	return userNameList;
 }
 
@@ -411,11 +437,13 @@ void Dispatcher::onChatRoomExit(Peer* chatRoomPeer){
 // Removes chatroom from vector
 void Dispatcher::onChatRoomClose(Chatroom* broker){
 	vector<Chatroom*>::iterator it;
+	pthread_mutex_lock(&chatRoomslock);
 	for (it = this->chatRooms.begin(); it != this->chatRooms.end(); it++){
 		Chatroom* chatRoom = *it;
 		if (chatRoom == broker){
 			this->chatRooms.erase(it);
 		}
 	}
+	pthread_mutex_unlock(&chatRoomslock);
 }
 

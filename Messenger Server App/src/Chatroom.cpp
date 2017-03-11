@@ -49,6 +49,7 @@ void Chatroom::addPeer(Peer* peer){
 // Removes a peer from chatRoomPeers vector
 void Chatroom::removePeer(Peer* peerToRemove){
 	vector<Peer*>::iterator it;
+	pthread_mutex_lock(&lock);
 	for (it = this->chatRoomPeers.begin(); it != this->chatRoomPeers.end();it++) {
 		Peer* peer = *it;
 		if (peer == peerToRemove){
@@ -56,6 +57,7 @@ void Chatroom::removePeer(Peer* peerToRemove){
 			break;
 		}
 	}
+	pthread_mutex_unlock(&lock);
 }
 
 void Chatroom::run(){
@@ -126,43 +128,50 @@ void Chatroom::closeRoom(){
 // Returns the sockets of the peers in peers vector
 vector<TCPSocket*> Chatroom::getPeersSockets() {
 	vector<TCPSocket*> peersSockets;
+	pthread_mutex_lock(&lock);
 	for (int i = 0; i < this->chatRoomPeers.size(); i++) {
 		peersSockets.push_back(this->chatRoomPeers[i]->getPeerSock());
 	}
-
+	pthread_mutex_unlock(&lock);
 	return peersSockets;
 }
 
 // Returns a peer from peers vector by userName
 Peer*  Chatroom::FindPeer(string userName) {
 	vector<Peer*>::iterator it;
+	pthread_mutex_lock(&lock);
 	for (it = chatRoomPeers.begin(); it != chatRoomPeers.end();it++) {
 		Peer* peer = *it;
 		if (peer->getPeerName() == userName){
 			return *it;
 		}
 	}
+	pthread_mutex_unlock(&lock);
 	return NULL;
 }
 
 // Returns a peer from peers vector by socket
 Peer* Chatroom::FindPeer(TCPSocket* conn) {
 	vector<Peer*>::iterator it;
+	pthread_mutex_lock(&lock);
 	for (it = chatRoomPeers.begin(); it != chatRoomPeers.end();it++) {
 		Peer* peer = *it;
 		if (peer->getPeerSock() == conn){
 			return *it;
 		}
 	}
+	pthread_mutex_unlock(&lock);
 	return NULL;
 }
 
 // Returns room peers names by roomName
 vector<string> Chatroom::getRoomPeersNames(string roomName){
 	vector<string> peerNames;
+	pthread_mutex_lock(&lock);
 	for (int i=0; i < this->chatRoomPeers.size(); i++) {
 		peerNames.push_back(this->chatRoomPeers[i]->getPeerName());
 	}
+	pthread_mutex_unlock(&lock);
 	return peerNames;
 }
 
@@ -170,8 +179,10 @@ vector<string> Chatroom::getRoomPeersNames(string roomName){
 void Chatroom::printAllPeersInRoom(){
 	cout<<"Users In Room"<<this->chatRoomName<<" :"<<endl;
 	vector<Peer*>::iterator it;
+	pthread_mutex_lock(&lock);
 	for (it = this->chatRoomPeers.begin(); it != chatRoomPeers.end(); it++) {
 		Peer* peer=*it;
 		cout<<peer->getPeerName()<<endl;
 	}
+	pthread_mutex_unlock(&lock);
 }

@@ -30,7 +30,9 @@ private:
 	Peer* FindPeerByIP(string address);
 	bool isPeerAvailable(Peer* peer);
 	Chatroom* findChatRoom(string roomName);
+	pthread_mutex_t connectedpeerslistlock;
 	pthread_mutex_t peerlistlock;
+	pthread_mutex_t sessionslock;
 	pthread_mutex_t chatRoomslock;
 
 public:

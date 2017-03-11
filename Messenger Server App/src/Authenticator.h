@@ -16,6 +16,7 @@ class Authenticator : public MThread, public Dispatcher::Handler{
 private:
 	Dispatcher* dispatcher;
 	vector<TCPSocket*> conns;
+	pthread_mutex_t lock;
 	bool isUserRegistered(string userName);
 	bool isUserLegit(string userName, string password);
 	vector<string> getAllRegisteredUsers();
