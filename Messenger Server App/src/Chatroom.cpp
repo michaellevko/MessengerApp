@@ -27,7 +27,7 @@ string Chatroom::getRoomName() {
 }
 
 // Returns vector of peers in room by roomName
-vector<Peer*> Chatroom::getRoomPeers(string roomName){
+vector<Peer*> Chatroom::getRoomPeers(){
 	return this->chatRoomPeers;
 }
 

@@ -42,7 +42,7 @@ public:
 	Peer* FindPeer(string userName);
 	Peer* FindPeer(TCPSocket*  peer);
 	string getRoomName();
-	vector<Peer*>getRoomPeers(string roomName);
+	vector<Peer*>getRoomPeers();
 	vector<string>getRoomPeersNames(string roomName);
 	string getRoomOwner();
 	vector<TCPSocket*> getPeersSockets();
