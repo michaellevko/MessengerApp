@@ -13,7 +13,6 @@ using namespace std;
 Chatroom::Chatroom(Handler* handler,Peer* peer, string chatRoomName) {
 	this->chatRoomOwner = peer;
 	this->chatRoomName = chatRoomName;
-	this->chatRoomPeers.push_back(peer);
 	this->chatActive = true;
 	this->handler = handler;
 }

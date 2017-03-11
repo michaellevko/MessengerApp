@@ -157,6 +157,46 @@ void Dispatcher::run(){
 				this->handler->onUsersList(conn);
 				break;
 			}
+			case GET_ALL_USERS_IN_ROOM:
+			{
+				string roomName = data[1];
+				Chatroom* room = this->findChatRoom(roomName);
+				if (room != NULL){
+					TCPMessengerProtocol::sendMsg(conn, SUCCESS, room->getRoomPeersNames(roomName));
+				} else {
+					TCPMessengerProtocol::sendMsg(conn, FAILURE);
+				}
+				break;
+			}
+			case GET_ALL_ROOMS:
+			{
+				TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllRoomNames());
+				break;
+			}
+			case CREATE_CHAT_ROOM:
+			{
+				string roomName = data[1];
+				Chatroom room = this->findChatRoom(roomName);
+				if(room == NULL){
+					this->openChatRoom(peer, roomName);
+					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+				} else {
+					TCPMessengerProtocol::sendMsg(conn, FAILURE);
+				}
+				break;
+			}
+			case ENTER_CHAT_ROOM:
+			{
+				string roomName = data[1];
+				Chatroom* room = this->findChatRoom(roomName);
+				if(room != NULL){
+					this->enterChatRoom(peer, room);
+					TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+				} else {
+					TCPMessengerProtocol::sendMsg(conn, FAILURE);
+				}
+				break;
+			}
 			case EXIT:
 			{
 				this->removePeer(peer);
@@ -169,6 +209,26 @@ void Dispatcher::run(){
 			}
 		}
 	}
+}
+
+// Adds peer to existing chatroom by roomname
+void Dispatcher::enterChatRoom(Peer* peer, Chatroom* room){
+	this->removePeer(peer);
+	room->addPeer(peer);
+}
+
+// Returns chatroom by name
+Chatroom* Dispatcher::findChatRoom(string roomName){
+	Chatroom* chatRoom;
+	vector<Chatroom* >::iterator it;
+	for (it = this->chatRooms.begin(); it != this->chatRooms.end(); it++) {
+		Chatroom* room=*it;
+		if (room->getRoomName() == roomName){
+			chatRoom = *it;
+			break;
+		}
+	}
+	return chatRoom;
 }
 
 // Returns a vector of all room names
@@ -187,7 +247,6 @@ void Dispatcher::openChatRoom(Peer* roomOwner, string roomName){
 	Chatroom* chatRoom = findChatRoom(roomName);
 	if (chatRoom == NULL) {
 		Chatroom* newChatRoom = new Chatroom(this, roomOwner, roomName);
-		this->removePeer(roomOwner);
 		this->chatRooms.push_back(newChatRoom);
 	}
 }
