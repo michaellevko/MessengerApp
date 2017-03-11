@@ -26,6 +26,7 @@ private:
 	Handler* handler;
 	Peer* FindPeer(string userName);
 	Peer* FindPeer(TCPSocket* sock);
+	Peer* FindPeerByIP(string address);
 	bool isPeerAvailable(Peer* peer);
 	Chatroom* findChatRoom(string roomName);
 	pthread_mutex_t peerlistlock;

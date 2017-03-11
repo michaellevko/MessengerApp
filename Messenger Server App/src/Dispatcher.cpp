@@ -96,6 +96,21 @@ Peer* Dispatcher::FindPeer(string userName) {
 	return ret;
 }
 
+// Returns a peer from peers vector by ip
+Peer* Dispatcher::FindPeerByIP(string address) {
+	Peer* ret = NULL;
+	vector<Peer*>::iterator it;
+	for (it = this->peers.begin(); it != this->peers.end(); it++) {
+		Peer* user = *it;
+
+		string ip = inet_ntoa(user->getPeerSock()->getPeerAddr().sin_addr);
+		if (ip == address) {
+			ret = *it;
+		}
+	}
+	return ret;
+}
+
 // Adds a new peer from Authenticator to Dispatcher after the login process
 void Dispatcher::addPeer(Peer* peer){
 	pthread_mutex_lock(&peerlistlock);
@@ -112,22 +127,22 @@ void Dispatcher::run(){
 		TCPSocket * conn = listener.listen();
 
 		if (conn != NULL) {
-			vector<string> data;
-			data = TCPMessengerProtocol::readMsg(conn);
+			vector<string> dataIn;
+			dataIn = TCPMessengerProtocol::readMsg(conn);
 			Peer* peer = FindPeer(conn);
 
 			// Check if client disconnected
-			if (data.size() == 0){
+			if (dataIn.size() == 0){
 				this->removePeer(peer);
 			} else {
-				switch (atoi(data[0].c_str())) {
+				switch (atoi(dataIn[0].c_str())) {
 
 				case CONNECT_TO_PEER_INIT:
 				{
-					if (data.size() > 1)
+					if (dataIn.size() > 1)
 					{
 						// Check if dest peer is available, if so send ip, if not send fail
-						Peer* destPeer = this->FindPeer(data[1]);
+						Peer* destPeer = this->FindPeer(dataIn[1]);
 						if (this->isPeerAvailable(destPeer)){
 							vector<string> destPeerAddress;
 							destPeerAddress.push_back(inet_ntoa(destPeer->getPeerSock()->getPeerAddr().sin_addr));
@@ -147,10 +162,10 @@ void Dispatcher::run(){
 				}
 				case CONNECT_TO_PEER_RUN:
 				{
-					if (data.size() > 1)
+					if (dataIn.size() > 1)
 					{
 						// Check if ip in data is available
-						Peer* destPeer = this->FindPeer(data[1]);
+						Peer* destPeer = this->FindPeerByIP(dataIn[1]);
 						if (this->isPeerAvailable(destPeer)){
 							vector<string> destPeerName;
 							destPeerName.push_back(destPeer->getPeerName());
@@ -183,9 +198,9 @@ void Dispatcher::run(){
 				}
 				case GET_ALL_USERS_IN_ROOM:
 				{
-					if (data.size() > 1)
+					if (dataIn.size() > 1)
 					{
-						string roomName = data[1];
+						string roomName = dataIn[1];
 						Chatroom* room = this->findChatRoom(roomName);
 						if (room != NULL){
 							TCPMessengerProtocol::sendMsg(conn, SUCCESS, room->getRoomPeersNames(roomName));
@@ -207,9 +222,9 @@ void Dispatcher::run(){
 				}
 				case CREATE_CHAT_ROOM:
 				{
-					if (data.size() > 1)
+					if (dataIn.size() > 1)
 					{
-						string roomName = data[1];
+						string roomName = dataIn[1];
 						Chatroom* room = this->findChatRoom(roomName);
 						if(room == NULL){
 							this->openChatRoom(peer, roomName);
@@ -227,9 +242,9 @@ void Dispatcher::run(){
 				}
 				case ENTER_CHAT_ROOM:
 				{
-					if (data.size() > 1)
+					if (dataIn.size() > 1)
 					{
-						string roomName = data[1];
+						string roomName = dataIn[1];
 						Chatroom* room = this->findChatRoom(roomName);
 						if(room != NULL){
 							this->enterChatRoom(peer, room);
@@ -326,7 +341,7 @@ void Dispatcher::removePeer(Peer* peer){
 // returns true if so, returns false otherwise
 bool Dispatcher::isPeerAvailable(Peer* peer){
 	bool isAvailable = false;
-	if (peer == this->FindPeer(peer->getPeerName())){
+	if (peer !=NULL && peer == this->FindPeer(peer->getPeerName())){
 		isAvailable = true;
 	}
 	return isAvailable;
