@@ -132,13 +132,13 @@ void Dispatcher::addPeer(Peer* peer){
 }
 
 void Dispatcher::run(){
+	vector<string> dataIn;
 	while (this->peers.size() > 0) {
 		MTCPListener listener;
 		listener.add(this->getPeersSockets());
 		TCPSocket * conn = listener.listen(LISTEN_TIMEOUT);
 
 		if (conn != NULL) {
-			vector<string> dataIn;
 			dataIn = TCPMessengerProtocol::readMsg(conn);
 			Peer* peer = FindPeer(conn);
 
