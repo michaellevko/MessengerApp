@@ -10,6 +10,9 @@
 
 #include "Session.h"
 #include "Chatroom.h"
+#include <vector>
+#include <iostream>
+#include <string>
 
 using namespace std;
 
