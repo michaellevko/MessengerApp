@@ -31,25 +31,25 @@ vector<Peer*> Chatroom::getRoomPeers(){
 	return this->chatRoomPeers;
 }
 
-string Chatroom::getRoomOwner(){
-	return this->chatRoomOwner->getPeerName();
+Peer* Chatroom::getRoomOwner(){
+	return this->chatRoomOwner;
 }
 
 // Adds peer to chatroom peers vector
 void Chatroom::addPeer(Peer* peer){
-	pthread_mutex_lock(&lock);
+	if(pthread_mutex_trylock(&lock) == 0){
 	this->chatRoomPeers.push_back(peer);
 	pthread_mutex_unlock(&lock);
 	if (this->chatRoomPeers.size() == 1){
 		start();
-	}
+	}}
 }
 
 
 // Removes a peer from chatRoomPeers vector
 void Chatroom::removePeer(Peer* peerToRemove){
 	vector<Peer*>::iterator it;
-	if(pthread_mutex_trylock(&lock)){
+	if(pthread_mutex_trylock(&lock) == 0){
 	for (it = this->chatRoomPeers.begin(); it != this->chatRoomPeers.end();it++) {
 		Peer* peer = *it;
 		if (peer == peerToRemove){
@@ -77,16 +77,6 @@ void Chatroom::run(){
 			} else {
 				switch (atoi(data[0].c_str())) {
 
-				case DESTROY_CHAT_ROOM:
-				{
-					if((sender == this->chatRoomOwner) && (this->chatRoomPeers.size() == 0)){
-						this->closeRoom();
-						TCPMessengerProtocol::sendMsg(peer, SUCCESS);
-					} else {
-						TCPMessengerProtocol::sendMsg(peer, FAILURE);
-					}
-					break;
-				}
 				case GET_ALL_USERS_IN_ROOM:
 				{
 					TCPMessengerProtocol::sendMsg(peer, SUCCESS, this->getRoomPeersNames(this->getRoomName()));
@@ -102,6 +92,7 @@ void Chatroom::run(){
 					this->removePeer(sender);
 					this->handler->onChatRoomExit(sender);
 					TCPMessengerProtocol::sendMsg(peer,SUCCESS);
+					cout << sender->getPeerName() << " left chatroom " << this->getRoomName() << endl;
 					break;
 				}
 				case GET_ALL_CONNECTED_USERS:

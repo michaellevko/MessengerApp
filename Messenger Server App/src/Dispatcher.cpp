@@ -125,15 +125,34 @@ void Dispatcher::addPeer(Peer* peer){
 	this->peers.push_back(peer);
 	pthread_mutex_unlock(&peerlistlock);
 	pthread_mutex_lock(&connectedpeerslistlock);
-	this->allConnectedPeers.push_back(peer);
+	// Check if peer is already in allConnectedPeers vector
+	if (!this->isPeerConnected(peer)){
+		this->allConnectedPeers.push_back(peer);
+	}
 	pthread_mutex_unlock(&connectedpeerslistlock);
 	if (peers.size() == 1)
 		start();
 }
 
+// Checks if peer is in allConnectedPeers vector
+// Returns true if peer is found, false otherwise
+bool Dispatcher::isPeerConnected(Peer* peer){
+	bool isPeerLoggedIn = false;
+	vector<Peer*>::iterator it;
+	for(it = this->allConnectedPeers.begin(); it != this->allConnectedPeers.end(); it++){
+		Peer* currPeer = *it;
+		if(currPeer->getPeerName() == peer->getPeerName()){
+			isPeerLoggedIn = true;
+			break;
+		}
+	}
+
+	return isPeerLoggedIn;
+}
+
 void Dispatcher::run(){
 	vector<string> dataIn;
-	while (this->allConnectedPeers.size() > 0) {
+	while (this->peers.size() > 0) {
 		MTCPListener listener;
 		listener.add(this->getPeersSockets());
 		TCPSocket * conn = listener.listen(LISTEN_TIMEOUT);
@@ -272,6 +291,23 @@ void Dispatcher::run(){
 					{
 						TCPMessengerProtocol::sendMsg(conn, FAILURE);
 						cout << "enter chat room without room name" << endl;
+					}
+					break;
+				}
+				case DESTROY_CHAT_ROOM:
+				{
+					string roomName = dataIn[1];
+					Chatroom* room = this->findChatRoom(roomName);
+					if(room != NULL){
+						if((peer->getPeerName() == room->getRoomOwner()->getPeerName()) && (room->getRoomPeers().size() == 0)){
+							room->closeRoom();
+							TCPMessengerProtocol::sendMsg(conn, SUCCESS);
+							cout << "chatroom " << roomName << " has been deleted." << endl;
+						} else {
+							TCPMessengerProtocol::sendMsg(conn, FAILURE);
+						}
+					} else {
+						TCPMessengerProtocol::sendMsg(conn, FAILURE);
 					}
 					break;
 				}
@@ -442,11 +478,11 @@ void Dispatcher::onChatRoomClose(Chatroom* broker){
 	vector<Chatroom*>::iterator it;
 	pthread_mutex_lock(&chatRoomslock);
 	for (it = this->chatRooms.begin(); it != this->chatRooms.end(); it++){
-		Chatroom* chatRoom = *it;
-		if (chatRoom == broker){
-			this->chatRooms.erase(it);
+		if (broker == *it){
+			break;
 		}
 	}
+	this->chatRooms.erase(it);
 	pthread_mutex_unlock(&chatRoomslock);
 }
 

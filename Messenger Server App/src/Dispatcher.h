@@ -30,6 +30,7 @@ private:
 	Handler* handler;
 	Peer* FindPeer(string userName);
 	Peer* FindPeer(TCPSocket* sock);
+	bool isPeerConnected(Peer* peer);
 	Peer* FindPeerByIP(string address);
 	bool isPeerAvailable(Peer* peer);
 	Chatroom* findChatRoom(string roomName);

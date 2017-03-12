@@ -44,7 +44,7 @@ public:
 	string getRoomName();
 	vector<Peer*>getRoomPeers();
 	vector<string>getRoomPeersNames(string roomName);
-	string getRoomOwner();
+	Peer* getRoomOwner();
 	vector<TCPSocket*> getPeersSockets();
 	void printAllPeersInRoom();
 };
