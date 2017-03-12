@@ -6,6 +6,8 @@
  */
 
 #include "Chatroom.h"
+#include <thread>
+#include <iostream>
 
 using namespace std;
 
@@ -38,8 +40,10 @@ Peer* Chatroom::getRoomOwner(){
 // Adds peer to chatroom peers vector
 void Chatroom::addPeer(Peer* peer){
 	if(pthread_mutex_trylock(&lock) == 0){
+	cout << "Chatroom::addPeer lock " << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	this->chatRoomPeers.push_back(peer);
 	pthread_mutex_unlock(&lock);
+	cout << "Chatroom::addPeer unlock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	if (this->chatRoomPeers.size() == 1){
 		start();
 	}}
@@ -50,6 +54,7 @@ void Chatroom::addPeer(Peer* peer){
 void Chatroom::removePeer(Peer* peerToRemove){
 	vector<Peer*>::iterator it;
 	if(pthread_mutex_trylock(&lock) == 0){
+	cout << "Chatroom::removePeer lock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	for (it = this->chatRoomPeers.begin(); it != this->chatRoomPeers.end();it++) {
 		Peer* peer = *it;
 		if (peer == peerToRemove){
@@ -58,6 +63,7 @@ void Chatroom::removePeer(Peer* peerToRemove){
 		}
 	}}
 	pthread_mutex_unlock(&lock);
+	cout << "Chatroom::removePeer unlock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 }
 
 void Chatroom::run(){
@@ -120,49 +126,59 @@ void Chatroom::closeRoom(){
 vector<TCPSocket*> Chatroom::getPeersSockets() {
 	vector<TCPSocket*> peersSockets;
 	pthread_mutex_lock(&lock);
+	cout << "Chatroom::getPeersSockets lock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	for (int i = 0; i < this->chatRoomPeers.size(); i++) {
 		peersSockets.push_back(this->chatRoomPeers[i]->getPeerSock());
 	}
 	pthread_mutex_unlock(&lock);
+	cout << "Chatroom::getPeersSockets unlock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	return peersSockets;
 }
 
 // Returns a peer from peers vector by userName
 Peer*  Chatroom::FindPeer(string userName) {
 	vector<Peer*>::iterator it;
+	Peer* peer = NULL;
 	pthread_mutex_lock(&lock);
+	cout << "Chatroom::FindPeer lock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	for (it = chatRoomPeers.begin(); it != chatRoomPeers.end();it++) {
-		Peer* peer = *it;
+		peer = *it;
 		if (peer->getPeerName() == userName){
-			return *it;
+			break;
 		}
 	}
 	pthread_mutex_unlock(&lock);
-	return NULL;
+	cout << "Chatroom::FindPeer unlock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
+	return peer;
 }
 
 // Returns a peer from peers vector by socket
 Peer* Chatroom::FindPeer(TCPSocket* conn) {
 	vector<Peer*>::iterator it;
+	Peer* peer = NULL;
 	pthread_mutex_lock(&lock);
+	cout << "Chatroom::FindPeer lock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	for (it = chatRoomPeers.begin(); it != chatRoomPeers.end();it++) {
-		Peer* peer = *it;
+		peer = *it;
 		if (peer->getPeerSock() == conn){
-			return *it;
+			break;
 		}
 	}
 	pthread_mutex_unlock(&lock);
-	return NULL;
+	cout << "Chatroom::FindPeer unlock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
+	return peer;
 }
 
 // Returns room peers names by roomName
 vector<string> Chatroom::getRoomPeersNames(string roomName){
 	vector<string> peerNames;
 	pthread_mutex_lock(&lock);
+	cout << "Chatroom::getRoomPeersNames lock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	for (int i=0; i < this->chatRoomPeers.size(); i++) {
 		peerNames.push_back(this->chatRoomPeers[i]->getPeerName());
 	}
 	pthread_mutex_unlock(&lock);
+	cout << "Chatroom::getRoomPeersNames unlock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	return peerNames;
 }
 
@@ -171,9 +187,11 @@ void Chatroom::printAllPeersInRoom(){
 	cout<<"Users In Room"<<this->chatRoomName<<" :"<<endl;
 	vector<Peer*>::iterator it;
 	pthread_mutex_lock(&lock);
+	cout << "Chatroom::printAllPeersInRoom lock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	for (it = this->chatRoomPeers.begin(); it != chatRoomPeers.end(); it++) {
 		Peer* peer=*it;
 		cout<<peer->getPeerName()<<endl;
 	}
 	pthread_mutex_unlock(&lock);
+	cout << "Chatroom::printAllPeersInRoom unlock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 }
