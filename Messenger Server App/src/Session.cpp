@@ -54,8 +54,8 @@ void Session::run(){
 				}}
 			}
 		}
-		delete this;
 	}
+	delete this;
 }
 
 Peer* Session::FindPeer(TCPSocket* peer) {

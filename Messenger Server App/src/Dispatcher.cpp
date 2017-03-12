@@ -298,8 +298,8 @@ vector<string> Dispatcher::enterChatRoom(Peer* peer, Chatroom* room){
 	for(it = roomPeers.begin(); it != roomPeers.end(); it++){
 		Peer* peer = *it;
 		string ip = inet_ntoa(peer->getPeerSock()->getPeerAddr().sin_addr);
-		roomPeersDetails.push_back(peer->getPeerName());
 		roomPeersDetails.push_back(ip);
+		roomPeersDetails.push_back(peer->getPeerName());
 	}
 	this->removePeer(peer);
 	room->addPeer(peer);
@@ -345,6 +345,8 @@ void Dispatcher::onSessionClose(Session* brocker, Peer* peerA,Peer* peerB){
 	// Add both peers to peers vector
 	if(peerA != NULL) {this->addPeer(peerA);}
 	if(peerB != NULL) {this->addPeer(peerB);}
+
+	cout << "Session closed." << endl;
 }
 
 
@@ -357,6 +359,7 @@ void Dispatcher::openSession(Peer* peerA, Peer* peerB){
 	pthread_mutex_lock(&sessionslock);
 	this->sessions.push_back(session);
 	pthread_mutex_unlock(&sessionslock);
+	cout << "New Session openned between " << peerA->getPeerName() << " and " << peerB->getPeerName() << endl;
 }
 
 // Removes peer from peers vector
