@@ -31,7 +31,7 @@ private:
 	Peer* FindPeer(string userName);
 	Peer* FindPeer(TCPSocket* sock);
 	bool isPeerConnected(Peer* peer);
-	Peer* FindPeerByIP(string address);
+	Peer* FindPeerByIPAndUdpPort(string address, string udpPort);
 	bool isPeerAvailable(Peer* peer);
 	Chatroom* findChatRoom(string roomName);
 	pthread_mutex_t connectedpeerslistlock;
@@ -57,8 +57,9 @@ public:
 	vector<string> enterChatRoom(Peer* peer, Chatroom* room);
 
 	void onSessionClose(Session* brocker,Peer* connA,Peer* connB);
-	void onConnectedUsersList(TCPSocket* peer);
-	void onUsersList(TCPSocket* peer);
+	void onListConnectedUsers(TCPSocket* peer);
+	void onListUsers(TCPSocket* peer);
+	void onListRooms(TCPSocket* peer);
 	void onChatRoomExit(Peer* chatRoomPeer);
 	void onChatRoomClose(Chatroom* brocker);
 	void onPeerDisconnect(Peer* peer);

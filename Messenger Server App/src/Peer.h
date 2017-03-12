@@ -17,10 +17,12 @@ class Peer{
 private:
 	string peerName;
 	TCPSocket* peerSock;
+	string udpSrcPort;
 public:
-	Peer(TCPSocket* sock, string name);
+	Peer(TCPSocket* sock, string name, string udpSrcPort);
 	string getPeerName();
 	TCPSocket* getPeerSock();
+	string getPeerUdpSrcPort();
 	~Peer();
 };
 

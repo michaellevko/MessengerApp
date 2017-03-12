@@ -35,12 +35,12 @@ void Session::run(){
 
 				case GET_ALL_CONNECTED_USERS:
 				{
-					this->handler->onConnectedUsersList(peer);
+					this->handler->onListConnectedUsers(peer);
 					break;
 				}
 				case GET_ALL_USERS:
 				{
-					this->handler->onUsersList(peer);
+					this->handler->onListUsers(peer);
 					break;
 				}
 				case CLOSE_SESSION_WITH_PEER:

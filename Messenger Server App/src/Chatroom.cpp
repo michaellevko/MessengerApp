@@ -88,7 +88,12 @@ void Chatroom::run(){
 				}
 				case GET_ALL_USERS:
 				{
-					this->handler->onUsersList(peer);
+					this->handler->onListUsers(peer);
+					break;
+				}
+				case GET_ALL_ROOMS:
+				{
+					this->handler->onListRooms(peer);
 					break;
 				}
 				case EXIT_CHAT_ROOM:
@@ -101,7 +106,7 @@ void Chatroom::run(){
 				}
 				case GET_ALL_CONNECTED_USERS:
 				{
-					handler->onConnectedUsersList(peer);
+					handler->onListConnectedUsers(peer);
 					break;
 				}
 				default:

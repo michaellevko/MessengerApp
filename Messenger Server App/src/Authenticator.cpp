@@ -61,7 +61,8 @@ void Authenticator::run() {
 				case LOGIN_USER:
 				{
 					if (this->Login(data[1], data[2])) {
-						Peer * newPeer = new Peer(conn, data[1]);
+						string udpSrcPort = data[3];
+						Peer * newPeer = new Peer(conn, data[1], udpSrcPort);
 						this->getDispatcher()->addPeer(newPeer);
 						this->removeConn(conn);
 						TCPMessengerProtocol::sendMsg(conn, SUCCESS);

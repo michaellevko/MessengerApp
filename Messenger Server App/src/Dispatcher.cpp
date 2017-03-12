@@ -113,14 +113,13 @@ Peer* Dispatcher::FindPeer(string userName) {
 }
 
 // Returns a peer from peers vector by ip
-Peer* Dispatcher::FindPeerByIP(string address) {
+Peer* Dispatcher::FindPeerByIPAndUdpPort(string address, string udpPort) {
 	Peer* ret = NULL;
 	vector<Peer*>::iterator it;
 	for (it = this->peers.begin(); it != this->peers.end(); it++) {
 		Peer* user = *it;
-
 		string ip = inet_ntoa(user->getPeerSock()->getPeerAddr().sin_addr);
-		if (ip == address) {
+		if ((ip == address) && (user->getPeerUdpSrcPort() == udpPort)) {
 			ret = *it;
 		}
 	}
@@ -187,9 +186,10 @@ void Dispatcher::run(){
 						// Check if dest peer is available, if so send ip, if not send fail
 						Peer* destPeer = this->FindPeer(dataIn[1]);
 						if (this->isPeerAvailable(destPeer)){
-							vector<string> destPeerAddress;
-							destPeerAddress.push_back(inet_ntoa(destPeer->getPeerSock()->getPeerAddr().sin_addr));
-							TCPMessengerProtocol::sendMsg(conn, SUCCESS, destPeerAddress);
+							vector<string> destPeerDetails;
+							destPeerDetails.push_back(inet_ntoa(destPeer->getPeerSock()->getPeerAddr().sin_addr));
+							destPeerDetails.push_back(destPeer->getPeerUdpSrcPort());
+							TCPMessengerProtocol::sendMsg(conn, SUCCESS, destPeerDetails);
 						}
 						else
 						{
@@ -208,7 +208,7 @@ void Dispatcher::run(){
 					if (dataIn.size() > 1)
 					{
 						// Check if ip in data is available
-						Peer* destPeer = this->FindPeerByIP(dataIn[1]);
+						Peer* destPeer = this->FindPeerByIPAndUdpPort(dataIn[1], peer->getPeerUdpSrcPort());
 						if (this->isPeerAvailable(destPeer)){
 							vector<string> destPeerName;
 							destPeerName.push_back(destPeer->getPeerName());
@@ -236,7 +236,7 @@ void Dispatcher::run(){
 				}
 				case GET_ALL_USERS:
 				{
-					this->handler->onUsersList(conn);
+					this->onListUsers(conn);
 					break;
 				}
 				case GET_ALL_USERS_IN_ROOM:
@@ -260,7 +260,7 @@ void Dispatcher::run(){
 				}
 				case GET_ALL_ROOMS:
 				{
-					TCPMessengerProtocol::sendMsg(conn, SUCCESS, this->getAllRoomNames());
+					this->onListRooms(conn);
 					break;
 				}
 				case CREATE_CHAT_ROOM:
@@ -348,6 +348,7 @@ vector<string> Dispatcher::enterChatRoom(Peer* peer, Chatroom* room){
 		string ip = inet_ntoa(peer->getPeerSock()->getPeerAddr().sin_addr);
 		roomPeersDetails.push_back(ip);
 		roomPeersDetails.push_back(peer->getPeerName());
+		roomPeersDetails.push_back(peer->getPeerUdpSrcPort());
 	}
 	this->removePeer(peer);
 	room->addPeer(peer);
@@ -485,18 +486,23 @@ vector<TCPSocket*> Dispatcher::getPeersSockets() {
 }
 
 // Sends all connected users to peer by getting all elements of peers vector
-void Dispatcher::onConnectedUsersList(TCPSocket* peer){
+void Dispatcher::onListConnectedUsers(TCPSocket* peer){
 	TCPMessengerProtocol::sendMsg(peer, SUCCESS, this->getAllConnectedPeers());
 }
 
 // Calls Authenticator to send registered users to conn
-void Dispatcher::onUsersList(TCPSocket* peer){
+void Dispatcher::onListUsers(TCPSocket* peer){
 	this->handler->onUsersList(peer);
 }
 
 // Adds chatRoomPeer to Dispatcher peers vector
 void Dispatcher::onChatRoomExit(Peer* chatRoomPeer){
 	this->addPeer(chatRoomPeer);
+}
+
+// Sends all rooms ro peer
+void Dispatcher::onListRooms(TCPSocket* peer){
+	TCPMessengerProtocol::sendMsg(peer, SUCCESS, this->getAllRoomNames());
 }
 
 // Removes chatroom from vector
