@@ -391,7 +391,7 @@ void Dispatcher::onSessionClose(Session* brocker, Peer* peerA,Peer* peerB){
 		Session* session = *it;
 		if (session == brocker) {
 			sessions.erase(it);
-			delete session;
+			//delete session;
 			break;
 		}
 	}
