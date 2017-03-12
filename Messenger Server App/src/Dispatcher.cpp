@@ -14,7 +14,7 @@ Dispatcher::Dispatcher(Handler* handler) {
 }
 
 Dispatcher::~Dispatcher() {
-	// TODO Auto-generated destructor stub
+	cout << "Dispatcher dtor." << endl;
 }
 
 // Prints all users in peers vector to server console
@@ -391,6 +391,7 @@ void Dispatcher::onSessionClose(Session* brocker, Peer* peerA,Peer* peerB){
 		Session* session = *it;
 		if (session == brocker) {
 			sessions.erase(it);
+			delete session;
 			break;
 		}
 	}

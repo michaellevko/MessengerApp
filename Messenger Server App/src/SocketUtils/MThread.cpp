@@ -8,6 +8,7 @@
 #include "MThread.h"
 #include <iostream>
 #include <stdio.h>
+#include <thread>
 using namespace std;
 
 void* worker(void* arg){
@@ -30,7 +31,7 @@ MThread::~MThread(){
 	if (threadId>0){
 		//kills the thread if exist
 		pthread_cancel(threadId);
-		printf("Thread was canceled\n");
+		cout << "Thread " << std::hash<std::thread::id>()(std::this_thread::get_id()) << " was canceled." << endl;
 	}
 }
 

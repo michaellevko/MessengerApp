@@ -55,7 +55,7 @@ void Session::run(){
 			}
 		}
 	}
-	delete this;
+	//delete this;
 }
 
 Peer* Session::FindPeer(TCPSocket* peer) {
@@ -66,7 +66,7 @@ Peer* Session::FindPeer(TCPSocket* peer) {
 }
 
 Session::~Session(){
-
+	cout << "Session dtor." << endl;
 }
 
 Peer* Session::getPeerA(){
