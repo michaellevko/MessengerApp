@@ -133,7 +133,7 @@ void Dispatcher::addPeer(Peer* peer){
 
 void Dispatcher::run(){
 	vector<string> dataIn;
-	while (this->peers.size() > 0) {
+	while (this->allConnectedPeers.size() > 0) {
 		MTCPListener listener;
 		listener.add(this->getPeersSockets());
 		TCPSocket * conn = listener.listen(LISTEN_TIMEOUT);

@@ -49,14 +49,14 @@ void Chatroom::addPeer(Peer* peer){
 // Removes a peer from chatRoomPeers vector
 void Chatroom::removePeer(Peer* peerToRemove){
 	vector<Peer*>::iterator it;
-	pthread_mutex_lock(&lock);
+	if(pthread_mutex_trylock(&lock)){
 	for (it = this->chatRoomPeers.begin(); it != this->chatRoomPeers.end();it++) {
 		Peer* peer = *it;
 		if (peer == peerToRemove){
 			this->chatRoomPeers.erase(it);
 			break;
 		}
-	}
+	}}
 	pthread_mutex_unlock(&lock);
 }
 
