@@ -18,7 +18,7 @@ Chatroom::Chatroom(Handler* handler,Peer* peer, string chatRoomName) {
 }
 
 Chatroom::~Chatroom(){
-
+	cout << "Chatroom dtor." << endl;
 }
 
 // Returns a roomName

@@ -14,7 +14,7 @@ Dispatcher::Dispatcher(Handler* handler) {
 }
 
 Dispatcher::~Dispatcher() {
-	// TODO Auto-generated destructor stub
+	cout << "Dispatcher dtor." << endl;
 }
 
 // Prints all users in peers vector to server console
