@@ -21,11 +21,13 @@ Authenticator::Authenticator() {
 // Adds new client connection to authentication list
 void Authenticator::addConn(TCPSocket* conn){
 	pthread_mutex_lock(&authLock);
+	TCPMessengerProtocol::printMutexLockMsg("Authenticator::addConn", "lock");
 	this->conns.push_back(conn);
 	if (this->conns.size() == 1){
 		start();
 	}
 	pthread_mutex_unlock(&authLock);
+	TCPMessengerProtocol::printMutexLockMsg("Authenticator::addConn", "unlock");
 }
 
 void Authenticator::run() {
@@ -107,12 +109,14 @@ bool Authenticator::Login(string userName, string password){
 void Authenticator::removeConn(TCPSocket* conn){
 	vector<TCPSocket*>::iterator it = this->findConnInVector(conn);
 	pthread_mutex_lock(&authLock);
+	TCPMessengerProtocol::printMutexLockMsg("Authenticator::removeConn", "lock");
 	if (it != this->conns.end()){
 		this->conns.erase(it);
 	} else {
 		cout << "ERROR: Can't remove connection (not found)." << endl;
 	}
 	pthread_mutex_unlock(&authLock);
+	TCPMessengerProtocol::printMutexLockMsg("Authenticator::removeConn", "unlock");
 }
 
 // Find connection location in connection vector

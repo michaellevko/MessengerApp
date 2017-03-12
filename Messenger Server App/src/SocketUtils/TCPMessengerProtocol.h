@@ -8,6 +8,8 @@
 #include <cstdlib>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <thread>
+#include <iostream>
 #include "TCPSocket.h"
 #include "../Parser.h"
 
@@ -67,6 +69,10 @@ public:
 	void static sendMsg(TCPSocket* sock, int command){
 		string msg = numberToString(command) + DELIMITER;
 		sock->send(msg);
+	}
+
+	void static printMutexLockMsg(string methodName, string lockState){
+		cout<< methodName << "	" << lockState << "	" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	}
 };
 
