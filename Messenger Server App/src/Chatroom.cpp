@@ -111,7 +111,7 @@ void Chatroom::run(){
 			}
 		}
 	}
-	delete this;
+	//delete this;
 }
 
 // Marks room as closed and calls handler to delete from chatroom vector

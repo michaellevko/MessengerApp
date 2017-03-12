@@ -46,6 +46,7 @@ void Session::run(){
 				case CLOSE_SESSION_WITH_PEER:
 				{
 					close();
+					TCPMessengerProtocol::sendMsg(peer, SUCCESS);
 					break;
 				}
 				default:
