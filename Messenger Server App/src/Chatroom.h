@@ -30,7 +30,7 @@ private:
 	Peer* chatRoomOwner;
 	bool chatActive;
 	Handler* handler;
-	pthread_mutex_t lock;
+	pthread_mutex_t roomLock;
 
 public:
 	Chatroom();
