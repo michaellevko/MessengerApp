@@ -207,8 +207,10 @@ void Dispatcher::run(){
 				{
 					if (dataIn.size() > 1)
 					{
+						string ip = dataIn[1];
+						string udpSrcPort = dataIn[2];
 						// Check if ip in data is available
-						Peer* destPeer = this->FindPeerByIPAndUdpPort(dataIn[1], peer->getPeerUdpSrcPort());
+						Peer* destPeer = this->FindPeerByIPAndUdpPort(ip, udpSrcPort);
 						if (this->isPeerAvailable(destPeer)){
 							vector<string> destPeerName;
 							destPeerName.push_back(destPeer->getPeerName());
