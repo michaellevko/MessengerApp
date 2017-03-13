@@ -37,21 +37,21 @@ Peer* Chatroom::getRoomOwner(){
 
 // Adds peer to chatroom peers vector
 void Chatroom::addPeer(Peer* peer){
-	if(pthread_mutex_trylock(&lock) == 0){
+	pthread_mutex_lock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::addPeer", "lock");
 	this->chatRoomPeers.push_back(peer);
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::addPeer", "unlock");
 	if (this->chatRoomPeers.size() == 1){
 		start();
-	}}
+	}
 }
 
 
 // Removes a peer from chatRoomPeers vector
 void Chatroom::removePeer(Peer* peerToRemove){
 	vector<Peer*>::iterator it;
-	if(pthread_mutex_trylock(&lock) == 0){
+	pthread_mutex_lock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::removePeer", "lock");
 	for (it = this->chatRoomPeers.begin(); it != this->chatRoomPeers.end();it++) {
 		Peer* peer = *it;
@@ -59,8 +59,8 @@ void Chatroom::removePeer(Peer* peerToRemove){
 			this->chatRoomPeers.erase(it);
 			break;
 		}
-	}}
-	pthread_mutex_unlock(&lock);
+	}
+	pthread_mutex_unlock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::removePeer", "unlock");
 }
 
@@ -88,7 +88,12 @@ void Chatroom::run(){
 				}
 				case GET_ALL_USERS:
 				{
-					this->handler->onUsersList(peer);
+					this->handler->onListUsers(peer);
+					break;
+				}
+				case GET_ALL_ROOMS:
+				{
+					this->handler->onListRooms(peer);
 					break;
 				}
 				case EXIT_CHAT_ROOM:
@@ -101,7 +106,7 @@ void Chatroom::run(){
 				}
 				case GET_ALL_CONNECTED_USERS:
 				{
-					handler->onConnectedUsersList(peer);
+					handler->onListConnectedUsers(peer);
 					break;
 				}
 				default:
@@ -123,12 +128,12 @@ void Chatroom::closeRoom(){
 // Returns the sockets of the peers in peers vector
 vector<TCPSocket*> Chatroom::getPeersSockets() {
 	vector<TCPSocket*> peersSockets;
-	pthread_mutex_lock(&lock);
+	pthread_mutex_lock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::getPeersSockets", "lock");
 	for (int i = 0; i < this->chatRoomPeers.size(); i++) {
 		peersSockets.push_back(this->chatRoomPeers[i]->getPeerSock());
 	}
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::getPeersSockets", "unlock");
 	return peersSockets;
 }
@@ -137,7 +142,7 @@ vector<TCPSocket*> Chatroom::getPeersSockets() {
 Peer*  Chatroom::FindPeer(string userName) {
 	vector<Peer*>::iterator it;
 	Peer* peer = NULL;
-	pthread_mutex_lock(&lock);
+	pthread_mutex_lock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::FindPeer", "lock");
 	cout << "Chatroom::FindPeer lock" << std::hash<std::thread::id>()(std::this_thread::get_id()) << endl;
 	for (it = chatRoomPeers.begin(); it != chatRoomPeers.end();it++) {
@@ -146,7 +151,7 @@ Peer*  Chatroom::FindPeer(string userName) {
 			break;
 		}
 	}
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::FindPeer", "unlock");
 	return peer;
 }
@@ -155,7 +160,7 @@ Peer*  Chatroom::FindPeer(string userName) {
 Peer* Chatroom::FindPeer(TCPSocket* conn) {
 	vector<Peer*>::iterator it;
 	Peer* peer = NULL;
-	pthread_mutex_lock(&lock);
+	pthread_mutex_lock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::FindPeer", "lock");
 	for (it = chatRoomPeers.begin(); it != chatRoomPeers.end();it++) {
 		peer = *it;
@@ -163,7 +168,7 @@ Peer* Chatroom::FindPeer(TCPSocket* conn) {
 			break;
 		}
 	}
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::FindPeer", "unlock");
 	return peer;
 }
@@ -171,12 +176,12 @@ Peer* Chatroom::FindPeer(TCPSocket* conn) {
 // Returns room peers names by roomName
 vector<string> Chatroom::getRoomPeersNames(string roomName){
 	vector<string> peerNames;
-	pthread_mutex_lock(&lock);
+	pthread_mutex_lock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::getRoomPeersNames", "lock");
 	for (int i=0; i < this->chatRoomPeers.size(); i++) {
 		peerNames.push_back(this->chatRoomPeers[i]->getPeerName());
 	}
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::getRoomPeersNames", "unlock");
 	return peerNames;
 }
@@ -185,12 +190,12 @@ vector<string> Chatroom::getRoomPeersNames(string roomName){
 void Chatroom::printAllPeersInRoom(){
 	cout<<"Users In Room"<<this->chatRoomName<<" :"<<endl;
 	vector<Peer*>::iterator it;
-	pthread_mutex_lock(&lock);
+	pthread_mutex_lock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::printAllPeersInRoom", "lock");
 	for (it = this->chatRoomPeers.begin(); it != chatRoomPeers.end(); it++) {
 		Peer* peer=*it;
 		cout<<peer->getPeerName()<<endl;
 	}
-	pthread_mutex_unlock(&lock);
+	pthread_mutex_unlock(&roomLock);
 	TCPMessengerProtocol::printMutexLockMsg("Chatroom::printAllPeersInRoom", "unlock");
 }

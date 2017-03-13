@@ -33,39 +33,37 @@ int main() {
 	Server* server = new Server();
 	printInstructions();
 	while (true) {
-		string msg;
-		string command;
-		cin >> command;
+		char command[50];
+		cin.getline(command, sizeof(command));
 
-		string delimiter = ":";
-		string beginCommand = command.substr(0, command.find(delimiter));
-		string endCommand = command.substr(command.find(delimiter)+1);
+		char delimiter = ' ';
+		vector<string> userInput = split(command, delimiter);
 
-		if (beginCommand == LIST_USERS)
+		if (userInput[0] == LIST_USERS)
 		{
 			server->listAllUsers();
 		}
-		else if (beginCommand == LIST_CONNECTED_USERS)
+		else if (userInput[0] == LIST_CONNECTED_USERS)
 		{
 			server->ListAllConnectedUsers();
 		}
-		else if (beginCommand == LIST_SESSIONS)
+		else if (userInput[0] == LIST_SESSIONS)
 		{
 			server->ListAllSessions();
 		}
-		else if (beginCommand == LIST_ROOMS)
+		else if (userInput[0] == LIST_ROOMS)
 		{
 			server->ListAllRooms();
 		}
-		else if (beginCommand == LIST_ROOM_USERS)
+		else if (userInput[0] == LIST_ROOM_USERS)
 		{
-			server->ListAllUsersInThisRoom(endCommand);
+			server->ListAllUsersInThisRoom(userInput[1]);
 		}
-		else if (beginCommand == HELP)
+		else if (userInput[0] == HELP)
 		{
 			printInstructions();
 		}
-		else if (beginCommand == SHUTDOWN)
+		else if (userInput[0] == SHUTDOWN)
 		{
 			server->shutdown();
 
@@ -73,7 +71,7 @@ int main() {
 		}
 		else
 		{
-			cout << "Error: invalid command - " << beginCommand <<endl;
+			cout << "Error: invalid command - " << userInput[0] <<endl;
 		}
 	}
 	return 0;

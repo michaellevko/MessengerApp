@@ -19,8 +19,9 @@ public:
 	public:
 		virtual void onChatRoomClose(Chatroom* brocker)=0;
 		virtual void onChatRoomExit(Peer* chatRoomPeer)=0;
-		virtual void onUsersList(TCPSocket* peer)=0;
-		virtual void onConnectedUsersList(TCPSocket* peer)=0;
+		virtual void onListUsers(TCPSocket* peer)=0;
+		virtual void onListConnectedUsers(TCPSocket* peer)=0;
+		virtual void onListRooms(TCPSocket* peer)=0;
 		virtual void onPeerDisconnect(Peer* peer)=0;
 	};
 private:
@@ -29,7 +30,7 @@ private:
 	Peer* chatRoomOwner;
 	bool chatActive;
 	Handler* handler;
-	pthread_mutex_t lock;
+	pthread_mutex_t roomLock;
 
 public:
 	Chatroom();
